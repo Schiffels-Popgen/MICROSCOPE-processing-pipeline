@@ -113,9 +113,10 @@ results <- inner_join(df_list[["TAB_Sequencing"]], query_list_seq, by=c("Full_Se
 if (!is.na(args[3]) && args[3] == "--debug") {
   write_tsv(results, "Debug_table.txt")
 } else {
-  write_tsv(results %>% 
+  cat(
+    format_tsv(results %>% 
               select(Sample_Name, Library_ID, Lane, Colour_Chemistry, 
-                     SeqType, Organism, Strandedness, UDG_Treatment, R1, R2, BAM),
-            "eager_input.tsv")
+                     SeqType, Organism, Strandedness, UDG_Treatment, R1, R2, BAM))
+  )
 }
 
