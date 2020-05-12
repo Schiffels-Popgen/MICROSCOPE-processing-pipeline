@@ -1,10 +1,14 @@
 #!/usr/bin/env Rscript
-library(sidora.core)
+if (!require('sidora.core')) {
+  if(!require('remotes')) install.packages('remotes')
+remotes::install_github('sidora-tools/sidora.core')
+} else {library(sidora.core)}
 library(purrr)
 library(dplyr, warn.conflicts = F)
 library(readr)
 library(tidyr)
 library(stringr)
+
 
 infer_color_chem <- function(x) {
   color_chem <- NULL
