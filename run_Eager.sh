@@ -47,7 +47,7 @@ for eager_input in /projects1/MICROSCOPE/eager_inputs/*.eager_input.tsv; do
     ## If the directory exists but lacks a MultiQC ask to attempt to resume execution. Helpful if a run failed.
     elif [[ ! -f ${eager_output_dir}/multiqc/multiqc_report.html ]]; then
         unset user_reply
-        echo -e "${Yellow}Output directory for batch ${Red}$(basename ${eager_output_dir})${Yellow} already exists, but lacks 'MultiQC/multiqc_report.html'.'$(tput sgr0)" ## '$(tput sgr0) returns to normal printing after the line is done
+        echo -e "${Yellow}Output directory for batch ${Red}$(basename ${eager_output_dir})${Yellow} already exists, but lacks 'multiqc/multiqc_report.html'.'$(tput sgr0)" ## '$(tput sgr0) returns to normal printing after the line is done
         echo "If a nextflow run for that batch did not complete successfully and was killed, I can try to resume that run from where it failed."
         echo "Would you like me to try? [y/n]"
         read user_reply
