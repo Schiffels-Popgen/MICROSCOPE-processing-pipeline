@@ -12,15 +12,15 @@ library(stringr)
 ## Infer colour chemistry from sequencer name
 infer_color_chem <- function(x) {
   color_chem <- NULL
-    if (x=="K00233 (HiSeq4000)") {
+    if (x %in% c("K00233 (HiSeq4000)","D00829 (HiSeq2500)","M02279 (MiSeq1)", "M06210 (MiSeq2)")) {
     color_chem=4
   } else if (x %in% c("NS500382 (Rosa)","NS500559 (Tosca)" )) {
     color_chem=2
-  } else if (x %in% c("MinIon 1", "MinIon 2")) {
+  } else if (x %in% c("MinIon 1", "MinIon 2", "MinIon HKI")) {
     color_chem=NA
-    warning("MinIo sequencing does not have color chemistry. Set to NA.")
+    message("MinIon sequencing does not have color chemistry. Set to NA.")
   } else {
-    warning("Color chemistry inference was not successful. Contact lamnidis@shh.mpg.de. Uninferred color chemistries set to Unknown.")
+    message("Color chemistry inference was not successful. Uninferred color chemistries set to 'Unknown'. Contact: lamnidis@shh.mpg.de.")
     color_chem="Unknown"
   }
   return(as.integer(color_chem))
@@ -31,11 +31,16 @@ infer_library_specs <- function(x) {
   udg_treatment <- NULL
   strandedness <- NULL
   words <- str_split(x, " " , simplify = T)
-  ## ssLib
-  if (words[,1] == "ssLibrary") {
+  ## ssLib non-UDG
+  if ((words[,1] == "ssLibrary" || words[,1] == "SsLibrary") && tail(words[1,],1) == "2018") {
     strandedness = "single"
     udg_treatment = "none"
-    
+
+  ## ssLib half-UDG
+  } else if (words[,1] == "ssLibrary" && tail(words[1,],1) == "EVA") {
+    strandedness = "single"
+    udg_treatment = "half"
+
   ## External
   } else if (words[,1] %in% c("Extern", "External")) {
     strandedness = "Unknown"
