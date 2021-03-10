@@ -9,32 +9,38 @@ library(readr)
 library(tidyr)
 library(stringr)
 
-
+## Infer colour chemistry from sequencer name
 infer_color_chem <- function(x) {
   color_chem <- NULL
-    if (x=="K00233 (HiSeq4000)") {
+    if (x %in% c("K00233 (HiSeq4000)","D00829 (HiSeq2500)","M02279 (MiSeq1)", "M06210 (MiSeq2)")) {
     color_chem=4
   } else if (x %in% c("NS500382 (Rosa)","NS500559 (Tosca)" )) {
     color_chem=2
-  } else if (x %in% c("MinIon 1", "MinIon 2")) {
+  } else if (x %in% c("MinIon 1", "MinIon 2", "MinIon HKI")) {
     color_chem=NA
-    warning("MinIo sequencing does not have color chemistry. Set to NA.")
+    message("MinIon sequencing does not have color chemistry. Set to NA.")
   } else {
-    warning("Color chemistry inference was not successful. Contact lamnidis@shh.mpg.de. Uninferred color chemistries set to Unknown.")
+    message("Color chemistry inference was not successful. Uninferred color chemistries set to 'Unknown'. Contact: lamnidis@shh.mpg.de.")
     color_chem="Unknown"
   }
   return(as.integer(color_chem))
 }
 
+## Infer strandedness and udg_treatment from protocol number
 infer_library_specs <- function(x) {
   udg_treatment <- NULL
   strandedness <- NULL
   words <- str_split(x, " " , simplify = T)
-  ## ssLib
-  if (words[,1] == "ssLibrary") {
+  ## ssLib non-UDG
+  if ((words[,1] == "ssLibrary" || words[,1] == "SsLibrary") && tail(words[1,],1) == "2018") {
     strandedness = "single"
     udg_treatment = "none"
-    
+
+  ## ssLib half-UDG
+  } else if (words[,1] == "ssLibrary" && tail(words[1,],1) == "EVA") {
+    strandedness = "single"
+    udg_treatment = "half"
+
   ## External
   } else if (words[,1] %in% c("Extern", "External")) {
     strandedness = "Unknown"
@@ -66,8 +72,67 @@ infer_library_specs <- function(x) {
   } else if (words[,1] == "Capture") {
       udg_treatment = "none"
       strandedness = "double"
+  
+  ## Inference failed?
+  } else {
+      message("Inference of strandedness and UDG treatment failed. Setting to 'Unknown'. Contact: lamnidis@shh.mpg.de")
+    udg_treatment = "Unknown"
+    strandedness = "Unknown"
   }
   return(c(strandedness, udg_treatment))
+}
+
+## Main function that queries pandora, formats info and spits out a table with the necessary information for eager.
+collect_and_format_info<- function(query_list_seq, con) {
+  ## Get complete pandora table
+  complete_pandora_table <- join_pandora_tables(
+    get_df_list(
+      c(make_complete_table_list(
+        c("TAB_Site", "TAB_Raw_Data")
+      )), con = con
+    )
+  )
+  
+  ## Get tabs of Organisms, Protocols and Sequencer names
+  df_list <- get_df_list(
+    c("TAB_Organism", "TAB_Protocol", "TAB_Sequencing_Sequencer"),con
+  )
+  
+  results <- inner_join(complete_pandora_table, query_list_seq, by=c("sequencing.Full_Sequencing_Id"="Sequencing")) %>%
+    select(library.Full_Library_Id, capture.Full_Capture_Id, sequencing.Sequencer, sequencing.Sequencing_Id, individual.Full_Individual_Id, library.Protocol, individual.Organism, raw_data.FastQ_Files) %>%
+    ## Infer protocol and Organism names from Pandora indexes
+    mutate(Protocol=map_chr(`library.Protocol`, function(prot) {df_list[["TAB_Protocol"]] %>% filter(`protocol.Id`==prot) %>% .[["protocol.Name"]]}),
+           Organism=map_chr(`individual.Organism`, function(org) {df_list[["TAB_Organism"]] %>% filter(`organism.Id`==org) %>% .[["organism.Name"]]}),
+           Sequencer=df_list[["TAB_Sequencing_Sequencer"]][["sequencer.Name"]][`sequencing.Sequencer`]) %>%
+    ## Infer SE/PE sequencing from number of FastQs per lane.
+    mutate(
+      num_fq=map_int(`raw_data.FastQ_Files`, function(fq) {ncol(str_split(fq, " ", simplify = T))}), 
+      num_r1=map(`raw_data.FastQ_Files`, function(fq) {sum(grepl("_R1_",str_split(fq, " ", simplify = T)))}),
+      SeqType=ifelse(num_fq == num_r1, "SE", "PE")) %>%
+    select(-starts_with("num_")) %>% 
+    ## Make R1 and R2 columns out of the FastQ file(s)
+    mutate(`raw_data.FastQ_Files`=map(`raw_data.FastQ_Files`, function(fq) {str_replace_all(fq, " ([[:graph:]]*_R2_.{3}.fastq.gz)", paste0(";","\\1"))})) %>%
+    separate_rows(`raw_data.FastQ_Files`, sep=" ") %>%
+    separate(`raw_data.FastQ_Files`, into=c("R1", "R2"), sep=";", fill="right") %>%
+    ## Infer Lane number from FastQ names
+    mutate(
+      ## Eager cannot handle same lane number for same Library_Id. Therefore lane number for additional sequencing needs to be
+      ## artificially inflated (by 8 which is the max lane number in our sequencers). This approach has the advantage that the output
+      ## for a given sequencing ID will be consistent and not dependent on the specific input file passed to this script. 
+      Lane=as.integer(str_replace(`R1`,"[[:graph:]]*_L([[:digit:]]{3})_R[[:graph:]]*", "\\1"))+8*(sequencing.Sequencing_Id-1), 
+      ## Library Strandedness and UDG Treatment from protocol name
+      Strandedness=map_chr(`Protocol`, function (.) {infer_library_specs(.)[1]}), 
+      UDG_Treatment=map_chr(`Protocol`, function(.){infer_library_specs(.)[2]}), 
+      ## Colour Chemistry from sequencer name
+      Colour_Chemistry=map_int(`Sequencer`, infer_color_chem),
+      ## BAM column always set to NA
+      BAM=NA
+    ) %>%
+    ## Rename final column names to valid Eager input headers
+    rename(Sample_Name=individual.Full_Individual_Id, Library_ID=capture.Full_Capture_Id,) %>%
+    ## Keep only final tsv columns in correct order
+    select(Sample_Name, Library_ID, Lane, Colour_Chemistry, SeqType, Organism, Strandedness, UDG_Treatment, R1, R2, BAM)
+  return(results)
 }
 
 ## MAIN ##
@@ -81,46 +146,14 @@ if (is.na(args[1])) {
 query_list_seq <- read_delim(args[1], "\n", col_names = "Sequencing", col_types = 'c')
 con <- get_pandora_connection(cred_file = args[2])
 
-df_list <- get_df_list(
-  c("TAB_Organism", "TAB_Protocol", "TAB_Sequencing_Sequencer", "TAB_Site","TAB_Individual","TAB_Library", "TAB_Sequencing","TAB_Raw_Data"),
-  con)
-
-# df_list[["TAB_Site"]] <- df_list[["TAB_Site"]] %>% mutate(Site=substr(library.Full_Library_Id,1,3)) %>% select(Full_Site_Id,Name)
-# print(str(df_list))
-# print(str(df_list[["TAB_Sequencing_Sequencer"]]))
-df_list[["TAB_Individual"]] <- df_list[["TAB_Individual"]] %>% mutate(Site=substr(individual.Full_Individual_Id,1,3)) %>% select(Site,individual.Full_Individual_Id, individual.Organism)
-df_list[["TAB_Library"]] <- df_list[["TAB_Library"]] %>% mutate(Sample_Name=substr(library.Full_Library_Id,1,6)) %>% select(Sample_Name, library.Full_Library_Id, library.Protocol)
-df_list[["TAB_Sequencing"]] <- df_list[["TAB_Sequencing"]] %>% mutate(Lib=substr(sequencing.Full_Sequencing_Id,1,12), Sequencer=df_list[["TAB_Sequencing_Sequencer"]][["sequencer.Name"]][`sequencing.Sequencer`]) %>% select(Lib, sequencing.Full_Sequencing_Id, Sequencer)
-df_list[["TAB_Raw_Data"]] <- df_list[["TAB_Raw_Data"]]  %>% mutate(Seq=substr(raw_data.Full_Raw_Data_Id,1,18)) %>% select(Seq, raw_data.Full_Raw_Data_Id, raw_data.FastQ_Files)
-
-results <- inner_join(df_list[["TAB_Sequencing"]], query_list_seq, by=c("sequencing.Full_Sequencing_Id"="Sequencing")) %>% 
-  left_join(., df_list[["TAB_Library"]], by=c("Lib"="library.Full_Library_Id")) %>%
-  left_join(., df_list[["TAB_Individual"]], by=c("Sample_Name"="individual.Full_Individual_Id")) %>% 
-  mutate(Protocol=map_chr(`library.Protocol`, function(prot) {df_list[["TAB_Protocol"]] %>% filter(`protocol.Id`==prot) %>% .[["protocol.Name"]]}),
-         Organism=map_chr(`individual.Organism`, function(org) {df_list[["TAB_Organism"]] %>% filter(`organism.Id`==org) %>% .[["organism.Name"]]})) %>%
-  left_join(., df_list[["TAB_Raw_Data"]], by=c("sequencing.Full_Sequencing_Id"="Seq")) %>%
-  mutate(
-    num_fq=map_int(`raw_data.FastQ_Files`, function(fq) {ncol(str_split(fq, " ", simplify = T))}), 
-    num_r1=map(`raw_data.FastQ_Files`, function(fq) {sum(grepl("_R1_",str_split(fq, " ", simplify = T)))}),
-    SeqType=ifelse(num_fq == num_r1, "SE", "PE")) %>%
-  select(-starts_with("num_")) %>% 
-  mutate(`raw_data.FastQ_Files`=map(`raw_data.FastQ_Files`, function(fq) {str_replace_all(fq, " ([[:graph:]]*_R2_.{3}.fastq.gz)", paste0(";","\\1"))})) %>%
-  separate_rows(`raw_data.FastQ_Files`, sep=" ") %>%
-  separate(`raw_data.FastQ_Files`, into=c("R1", "R2"), sep=";", fill="right") %>%
-   mutate(Lane=as.integer(str_replace(`R1`,"[[:graph:]]*_L([[:digit:]]{3})_R[[:graph:]]*", "\\1")), 
-          Strandedness=map_chr(`Protocol`, function (.) {infer_library_specs(.)[1]}), 
-          UDG_Treatment=map_chr(`Protocol`, function(.){infer_library_specs(.)[2]}), 
-          Colour_Chemistry=map_int(`Sequencer`, infer_color_chem),
-          BAM=NA
-          ) %>%
-  rename(Library_ID=sequencing.Full_Sequencing_Id)
+results <- collect_and_format_info(query_list_seq, con)
 
 if (!is.na(args[3]) && args[3] == "--debug") {
   write_tsv(results, "Debug_table.txt")
 } else {
   cat(
     format_tsv(results %>% 
-              select(Sample_Name, Library_ID, Lane, Colour_Chemistry, 
+              select(Sample_Name, Library_ID,  Lane, Colour_Chemistry, 
                      SeqType, Organism, Strandedness, UDG_Treatment, R1, R2, BAM))
   )
 }

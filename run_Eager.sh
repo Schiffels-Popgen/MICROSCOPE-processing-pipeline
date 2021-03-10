@@ -6,9 +6,9 @@ microscope_config='/projects1/MICROSCOPE/MICROSCOPE.config'
 
 ## Set profiles based on cluster.
 if [[ $(hostname) =~ ^mpi- ]]; then
-	nextflow_profiles="shh,sdag"
+	nextflow_profiles="shh"
 elif [[ $(hostname) =~ ^cdag ]]; then
-	nextflow_profiles="shh,cdag"
+	nextflow_profiles="cdag,shh"
 fi
 
 ## Set colour and face for colour printing
@@ -25,7 +25,7 @@ for eager_input in /projects1/MICROSCOPE/eager_inputs/*.eager_input.tsv; do
         # echo "${eager_input}:    Input is newer"
         echo "Running eager on ${eager_input}:"
         echo "nextflow run nf-core/eager \
-            -r  \
+            -r ${eager_version} \
             -profile ${nextflow_profiles} \
             -c ${microscope_config} \
             --input ${eager_input} \
