@@ -72,6 +72,12 @@ infer_library_specs <- function(x) {
   } else if (words[,1] == "Capture") {
       udg_treatment = "none"
       strandedness = "double"
+  
+  ## Inference failed?
+  } else {
+      message("Inference of strandedness and UDG treatment failed. Setting to 'Unknown'. Contact: lamnidis@shh.mpg.de")
+    udg_treatment = "Unknown"
+    strandedness = "Unknown"
   }
   return(c(strandedness, udg_treatment))
 }
