@@ -6,7 +6,7 @@ microscope_config='/projects1/MICROSCOPE/MICROSCOPE.config'
 
 ## Set profiles based on cluster.
 if [[ $(hostname) =~ ^mpi- ]]; then
-	nextflow_profiles="sdag,shh"
+	nextflow_profiles="shh"
 elif [[ $(hostname) =~ ^cdag ]]; then
 	nextflow_profiles="cdag,shh"
 fi
