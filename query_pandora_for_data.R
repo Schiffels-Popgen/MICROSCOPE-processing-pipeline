@@ -36,11 +36,24 @@ infer_library_specs <- function(x) {
     strandedness = "single"
     udg_treatment = "none"
 
-  ## ssLib half-UDG
+  ## ssLib Unknown UDG
   } else if (words[,1] == "ssLibrary" && tail(words[1,],1) == "EVA") {
+    message("Inference of UDG treatment failed for protocol '",x,"'. Setting to 'Unknown'.
+You will need to fill in this information manually, since this protocol could refer to either UDG treatment.
+")
+    strandedness = "single"
+    udg_treatment = "Unknown"
+    
+    ## ssLib automated non-UDG Leipzig
+  } else if (words[,1] == "Automated_ss_library_preparation_noUDG_EVA_CoreUnit") {
+    strandedness = "single"
+    udg_treatment = "none"
+
+  ## ssLib automated half-UDG Leipzig
+  } else if (words[,1] == "Automated_ss_library_preparation_partialUDG_EVA_CoreUnit") {
     strandedness = "single"
     udg_treatment = "half"
-
+    
   ## External
   } else if (words[,1] %in% c("Extern", "External")) {
     strandedness = "Unknown"
@@ -75,7 +88,9 @@ infer_library_specs <- function(x) {
   
   ## Inference failed?
   } else {
-      message("Inference of strandedness and UDG treatment failed. Setting to 'Unknown'. Contact: lamnidis@shh.mpg.de")
+      message("Inference of strandedness and UDG treatment failed for library protocol '",x,"'. Setting both fields to 'Unknown'. Please fill in this informations manually. 
+Contact lamnidis@shh.mpg.de if you think the library protocol stated could be automatically inferred.
+")
     udg_treatment = "Unknown"
     strandedness = "Unknown"
   }
