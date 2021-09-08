@@ -34,6 +34,8 @@ for eager_input in /projects1/MICROSCOPE/eager_inputs/*.eager_input.tsv; do
             -w ${eager_output_dir}/work \
             -with-tower"
 
+        touch -c ${eager_output_dir} ## Refresh the creation date of the output directory to reflect the start of the new run, but do not create a file if it doesnt exist.
+            
             nextflow run nf-core/eager \
                 -r ${eager_version} \
                 -profile ${nextflow_profiles} \
@@ -44,8 +46,6 @@ for eager_input in /projects1/MICROSCOPE/eager_inputs/*.eager_input.tsv; do
                 -w ${eager_output_dir}/work \
                 -with-tower
             
-            touch ${eager_output_dir} ## Refresh the creation date of the output directory to reflect the end of the new run.
-
     ## If the MultiQC report is older than the directory, or doesnt exist yet, try to resume execution. Helpful for runs that failed.
     elif [[ ${eager_output_dir} -nt ${eager_output_dir}/multiqc/multiqc_report.html ]]; then
         if [[ ${user_reply} != "Y" ]]; then 
