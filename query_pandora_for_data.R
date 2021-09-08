@@ -158,7 +158,7 @@ if (is.na(args[1])) {
   quit(status = 1)
 }
 
-query_list_seq <- read_delim(args[1], "\n", col_names = "Sequencing", col_types = 'c')
+query_list_seq <- read_tsv(args[1], col_names = "Sequencing", col_types = 'c')
 con <- get_pandora_connection(cred_file = args[2])
 
 results <- collect_and_format_info(query_list_seq, con)
