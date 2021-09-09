@@ -35,7 +35,7 @@ for eager_input in /mnt/archgen/MICROSCOPE/eager_inputs/*.eager_input.tsv; do
             --email ${USER}@eva.mpg.de \
             --outdir ${eager_output_dir} \
             -w ${eager_output_dir}/work \
-            -with-tower"
+            -with-tower -ansi-log false"
 
         touch -c ${eager_output_dir} ## Refresh the creation date of the output directory to reflect the start of the new run, but do not create a file if it doesnt exist.
             
@@ -47,7 +47,7 @@ for eager_input in /mnt/archgen/MICROSCOPE/eager_inputs/*.eager_input.tsv; do
                 --email ${USER}@eva.mpg.de \
                 --outdir ${eager_output_dir} \
                 -w ${eager_output_dir}/work \
-                -with-tower
+                -with-tower -ansi-log false
             
     ## If the MultiQC report is older than the directory, or doesnt exist yet, try to resume execution. Helpful for runs that failed.
     elif [[ ${eager_output_dir} -nt ${eager_output_dir}/multiqc/multiqc_report.html ]]; then
@@ -75,7 +75,7 @@ for eager_input in /mnt/archgen/MICROSCOPE/eager_inputs/*.eager_input.tsv; do
                 --email ${USER}@eva.mpg.de \
                 --outdir ${eager_output_dir} \
                 -w ${eager_output_dir}/work \
-                -with-tower \
+                -with-tower -ansi-log false \
                 -resume"
             
             nextflow run nf-core/eager \
@@ -86,7 +86,7 @@ for eager_input in /mnt/archgen/MICROSCOPE/eager_inputs/*.eager_input.tsv; do
                 --email ${USER}@eva.mpg.de \
                 --outdir ${eager_output_dir} \
                 -w ${eager_output_dir}/work \
-                -with-tower \
+                -with-tower -ansi-log false \
                 -resume
         else
             echo "OK! ${eager_input} was skipped"
