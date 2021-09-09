@@ -155,7 +155,7 @@ collect_and_format_info<- function(query_list_seq, con) {
 args = commandArgs(trailingOnly=TRUE)
 
 if (is.na(args[1])) {
-  write("No input file given. \n\nusage: Rscript query_pandora_for_data.R /path/to/input_seq_IDs_file.txt /path/to/pandora/.credentials [--debug].", file=stderr())
+  write("No input file given. \n\nusage: Rscript query_pandora_for_data.R /path/to/input_seq_IDs_file.txt /path/to/pandora/.credentials [-r/--rename].\n\nOptions:\n\t -r/--rename\tChanges all dots (.) in the Library_ID field of the output to underscores (_).\n\t\t\tSome tools used in nf-core/eager will strip everything after the first dot (.)\n\t\t\tfrom the name of the input file, which can cause naming conflicts in rare cases.\n", file=stderr())
   quit(status = 1)
 }
 
@@ -166,6 +166,13 @@ results <- collect_and_format_info(query_list_seq, con)
 
 if (!is.na(args[3]) && args[3] == "--debug") {
   write_tsv(results, "Debug_table.txt")
+} else if (!is.na(args[3]) && ( args[3] == "--rename" || args[3] == "-r")) {
+  cat(
+    format_tsv(results %>% 
+                 mutate(Library_ID=str_replace_all(Library_ID, "[.]", "_")) %>% ## Replace dots in the Library_ID to underscores.
+                 select(Sample_Name, Library_ID,  Lane, Colour_Chemistry, 
+                        SeqType, Organism, Strandedness, UDG_Treatment, R1, R2, BAM))
+  )
 } else {
   cat(
     format_tsv(results %>% 
