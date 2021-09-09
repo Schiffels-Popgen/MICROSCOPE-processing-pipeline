@@ -1,6 +1,7 @@
 #!/usr/bin/env bash
 
-eager_version='2.2.1' #7971d89e54
+# eager_version='2.2.1' #7971d89e54
+eager_version='2.3.5' ## Changed on 05/07/2021
 
 microscope_config='/projects1/MICROSCOPE/MICROSCOPE.config'
 
