@@ -3,22 +3,24 @@
 # eager_version='2.2.1' #7971d89e54
 eager_version='2.3.5' ## Changed on 05/07/2021
 
-microscope_config='/projects1/MICROSCOPE/MICROSCOPE.config'
+microscope_config='/mnt/archgen/MICROSCOPE/MICROSCOPE.config'
 
 ## Set profiles based on cluster.
 if [[ $(hostname) =~ ^mpi- ]]; then
-	nextflow_profiles="shh,singularity,microscope"
+  nextflow_profiles="shh,singularity,microscope"
 elif [[ $(hostname) =~ ^cdag ]]; then
-	nextflow_profiles="cdag,shh"
+  nextflow_profiles="cdag,shh,microscope"
+elif [[ $(hostname) =~ ^bio ]]; then
+  nextflow_profiles="eva,archgen,microscope"
 fi
 
 ## Set colour and face for colour printing
 Red='\033[1;31m'$(tput bold) ## Red bold face
 Yellow=$(tput sgr0)'\033[1;33m' ## Yellow normal face
 
-for eager_input in /projects1/MICROSCOPE/eager_inputs/*.eager_input.tsv; do
+for eager_input in /mnt/archgen/MICROSCOPE/eager_inputs/*.eager_input.tsv; do
     ## Set output directory name from eager input name
-    eager_output_dir="/projects1/MICROSCOPE/eager_outputs/$(basename ${eager_input} .eager_input.tsv)"
+    eager_output_dir="/mnt/archgen/MICROSCOPE/eager_outputs/$(basename ${eager_input} .eager_input.tsv)"
     ## Run name is batch name with dashes replaced with underscores
     # run_name=$(basename ${eager_output_dir//-/_}) ## Eager only allows run names with 1 underscore which makes giving informative run names difficult.
     ## If the eager input is newer than the output directory or the output directory doesnt exist, then eager is run on the input
@@ -30,7 +32,7 @@ for eager_input in /projects1/MICROSCOPE/eager_inputs/*.eager_input.tsv; do
             -profile ${nextflow_profiles} \
             -c ${microscope_config} \
             --input ${eager_input} \
-            --email ${USER}@shh.mpg.de \
+            --email ${USER}@eva.mpg.de \
             --outdir ${eager_output_dir} \
             -w ${eager_output_dir}/work \
             -with-tower"
@@ -42,7 +44,7 @@ for eager_input in /projects1/MICROSCOPE/eager_inputs/*.eager_input.tsv; do
                 -profile ${nextflow_profiles} \
                 -c ${microscope_config} \
                 --input ${eager_input} \
-                --email ${USER}@shh.mpg.de \
+                --email ${USER}@eva.mpg.de \
                 --outdir ${eager_output_dir} \
                 -w ${eager_output_dir}/work \
                 -with-tower
@@ -70,7 +72,7 @@ for eager_input in /projects1/MICROSCOPE/eager_inputs/*.eager_input.tsv; do
                 -profile ${nextflow_profiles} \
                 -c ${microscope_config} \
                 --input ${eager_input} \
-                --email ${USER}@shh.mpg.de \
+                --email ${USER}@eva.mpg.de \
                 --outdir ${eager_output_dir} \
                 -w ${eager_output_dir}/work \
                 -with-tower \
@@ -81,7 +83,7 @@ for eager_input in /projects1/MICROSCOPE/eager_inputs/*.eager_input.tsv; do
                 -profile ${nextflow_profiles} \
                 -c ${microscope_config} \
                 --input ${eager_input} \
-                --email ${USER}@shh.mpg.de \
+                --email ${USER}@eva.mpg.de \
                 --outdir ${eager_output_dir} \
                 -w ${eager_output_dir}/work \
                 -with-tower \
