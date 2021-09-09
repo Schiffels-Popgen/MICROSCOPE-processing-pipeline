@@ -58,7 +58,8 @@ You will need to fill in this information manually, since this protocol could re
   } else if (words[,1] %in% c("Extern", "External")) {
     strandedness = "Unknown"
     udg_treatment = "Unknown"
-  
+    message("Cannot infer strandedness and UDG treatment for external libraries. Setting both to \"Unknown\".")
+
   ## Modern DNA
   } else if (words[,1] == "Illumina") {
     strandedness = "double"
