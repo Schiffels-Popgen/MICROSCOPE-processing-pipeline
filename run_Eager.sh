@@ -11,7 +11,7 @@ if [[ $(hostname) =~ ^mpi- ]]; then
 elif [[ $(hostname) =~ ^cdag ]]; then
   nextflow_profiles="cdag,shh,microscope"
 elif [[ $(hostname) =~ ^bio ]]; then
-  nextflow_profiles="eva,archgen,microscope"
+  nextflow_profiles="eva,archgen,big_data,microscope"
 fi
 
 ## Set colour and face for colour printing
