@@ -25,7 +25,7 @@ parser <- add_option(parser, c("-i", "--input_eager_output_directory"), type = '
                      help = "The path to the eager output directory.")
 arguments <- parse_args(parser)
 
-opts <- arguments$options
+opts <- arguments
 
 print("running with Options:")
 print(opts)
