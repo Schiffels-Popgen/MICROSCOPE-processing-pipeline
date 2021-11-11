@@ -14,7 +14,7 @@ title: "Preliminary data report"
 subtitle: "`r params$set_subtitle`"
 ---
 
-```{r load_libraries, echo=FALSE, message=FALSE}
+```{r load_libraries, echo=FALSE, message=FALSE, warning=FALSE}
 ## Load required packages
 library(dplyr)
 library(tidyr)
