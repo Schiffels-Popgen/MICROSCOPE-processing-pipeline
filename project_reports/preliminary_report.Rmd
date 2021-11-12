@@ -33,6 +33,7 @@ remotes::install_github("sidora-tools/sidora.core")
 library(sidora.core)
 require(RMariaDB)
 
+credential_file <- path.expand(params$cred_file)
 eager_output_dir <- path.expand(params$eager_output_dir)
 stats_table <- paste0(eager_output_dir, "/multiqc/multiqc_data/multiqc_general_stats.txt")
 snp_coverage_fns <- Sys.glob(paste0(eager_output_dir, "/genotyping/*_eigenstrat_coverage.txt"))
@@ -45,7 +46,7 @@ if ( length(snp_coverage_fns) > 1 ){
   snp_coverage <- snp_coverage_fns[1]
 }
 
-sex_det_file <- Sys.glob(paste0(eager_output_dir, "sex_determination/SexDet.txt"))
+sex_det_file <- Sys.glob(paste0(eager_output_dir, "/sex_determination/SexDet.txt"))
 
 ## Function to infer genetic sex from x/y rates
 infer_sex <- function(sex_det){
@@ -78,7 +79,7 @@ library_info %>% kable(format.args=list(big.mark = ',', digits=3))  %>% kable_st
 ```{r pandora, eval=FALSE, include=FALSE}
 ### NOT RUN DURING KNIT. FOR LOCAL INTERACTIVE RUNNING.
 ## Loading pandora and using mounted data is hard because of two different VPNs. Download pandora table, save to file then load in next chunk while knitting.
-con <- get_pandora_connection(params$cred_file)
+con <- get_pandora_connection(credential_file)
 pandora_data <- get_df("TAB_Individual", con) %>% 
   filter(`individual.Full_Individual_Id` %in% sex_det$Sample) %>%
   select(`individual.Full_Individual_Id`, `individual.Archaeological_ID`) %>%
@@ -112,7 +113,7 @@ sex_det <- read_tsv(sex_det_file, col_names=c("#Sample", "#SnpsAut", "#SNPsX", "
   infer_sex()
 
 ## Load ArchIDs from pandora using sidora
-con <- get_pandora_connection(params$cred_file)
+con <- get_pandora_connection(credential_file)
 pandora_data <- get_df("TAB_Individual", con) %>% 
   filter(`individual.Full_Individual_Id` %in% sex_det$Sample) %>%
   select(`individual.Full_Individual_Id`, `individual.Archaeological_ID`) %>%
