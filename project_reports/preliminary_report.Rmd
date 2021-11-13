@@ -53,21 +53,20 @@ sex_cutoffs <- tibble("Expected ranges"=c("XX", "XY"),
                       ymin=c(xx_ymin, xy_ymin), 
                       ymax=c(xx_ymax, xy_ymax))
 
-# sex_cutoffs <- matrix(c(xx_xmin, xx_xmax, xx_ymin, xx_ymax, xy_xmin, xy_xmax, xy_ymin, xy_ymax), nrow=2, byrow=T, dimnames = list(c("XX","XY"), c("xmin", "xmax","ymin","ymax")))
-
 ## Function to infer genetic sex from x/y rates
 infer_sex <- function(sex_det, sex_cutoffs){
-  print(sex_cutoffs[1,"xmin"])
+  ## Convert to a matrix with rownames so code is more legible and to avoid needing to pull() values from the tibbles.
+  limits <- sex_cutoffs %>% tibble::column_to_rownames(var="Expected ranges") %>% as.matrix()
   sex_det <- sex_det %>%
     mutate("Genetic Sex" = ifelse(
-      `x-rate` > sex_cutoffs[1,"xmin"] & 
-        `x-rate` < sex_cutoffs[1,"xmax"] & 
-        `y-rate` > sex_cutoffs[1,"ymin"] & 
-        `y-rate` < sex_cutoffs[1,"ymax"], "F",
-      ifelse(`x-rate` > sex_cutoffs[2,"xmin"] & 
-               `x-rate` < sex_cutoffs[2,"xmax"] & 
-               `y-rate` > sex_cutoffs[2,"ymin"] & 
-               `y-rate` < sex_cutoffs[2,"ymax"], "M",
+      `x-rate` > limits["XX","xmin"] & 
+        `x-rate` < limits["XX","xmax"] & 
+        `y-rate` > limits["XX","ymin"] & 
+        `y-rate` < limits["XX","ymax"], "F",
+      ifelse(`x-rate` > limits["XY","xmin"] & 
+               `x-rate` < limits["XY","xmax"] & 
+               `y-rate` > limits["XY","ymin"] & 
+               `y-rate` < limits["XY","ymax"], "M",
              "Unknown"))) %>%
     select(`Sample`, `Genetic Sex`)
   return(sex_det)
