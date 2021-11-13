@@ -20,9 +20,18 @@ parser <- add_option(parser, c("-c", "--cred_file"), type = 'character',
 parser <- add_option(parser, c("-o", "--output_pdf_name"), type = 'character',
                      action = "store", dest = "output_name", 
                      help = "The name of the output .pdf report.")
-parser <- add_option(parser, c("-i", "--input_eager_output_directory"), type = 'character',
-                     action = "store", dest = "input",
-                     help = "The path to the eager output directory.")
+parser <- add_option(parser, c("-s", "--snp_coverage_file"), type = 'character',
+                     action = "store", dest = "snp_coverage_file",
+                     help = "The path to the eigenstrat snp coverage file.")
+parser <- add_option(parser, c("-d", "--sex_det_file"), type = 'character',
+                     action = "store", dest = "sex_det_file",
+                     help = "The path to the sex determination output file.")
+parser <- add_option(parser, c("-t", "--stats_table"), type = 'character',
+                     action = "store", dest = "stats_table",
+                     help = "The path to the multiqc general stats table file.")
+parser <- add_option(parser, c("-b", "--batch_name"), type = 'character',
+                     action = "store", dest = "batch_name",
+                     help = "The name of the batch, to be capitalised and used as a subtitle for the report.")
 arguments <- parse_args(parser)
 
 opts <- arguments
@@ -35,14 +44,16 @@ if(!file.exists(reportTemplate)) {
     stop("could not find report template. Please verify the path provided.")
 }
 
-## Get batch name from eager_output directory path
-subtitle <- stringr::str_split_fixed(basename(opts$input), "-", n=4)[1,4]
-subtitle <- firstup(subtitle) ## Capitalise first letter
+## Capitalise first letter of batch name to use as a subtitle
+subtitle <- firstup(opts$batch_name)
 
 render(reportTemplate,
     params = list(
         set_subtitle = subtitle,
-        eager_output_dir = opts$input,
+        # eager_output_dir = opts$input,
+        snp_coverage_file = opts$snp_coverage_file,
+        sex_det_file = opts$sex_det_file,
+        stats_table = opts$stats_table,
         cred_file = opts$cred_file),
     output_file = opts$output_name,
     output_dir = dirname(opts$output_name)
