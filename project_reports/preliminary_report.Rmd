@@ -6,8 +6,10 @@ output:
   html_document:
     df_print: paged
 params: 
-    set_subtitle: "Potzneusiedl"
-    eager_output_dir: "/mnt/archgen/MICROSCOPE/eager_outputs/2021-09-09-potzneusiedl/"
+    set_subtitle: "potzneusiedl"
+    snp_coverage_file: "/mnt/archgen/MICROSCOPE/eager_outputs/2021-09-09-potzneusiedl/genotyping/single_eigenstrat_coverage.txt"
+    sex_det_file: "/mnt/archgen/MICROSCOPE/eager_outputs/2021-09-09-potzneusiedl/sex_determination/SexDet.txt"
+    stats_table: "/mnt/archgen/MICROSCOPE/eager_outputs/2021-09-09-potzneusiedl/multiqc/multiqc_data/multiqc_general_stats.txt"
     cred_file: "~/Software/github/Schiffels-Popgen/MICROSCOPE-processing-pipeline/.credentials"
     
 title: "Preliminary data report"
@@ -33,20 +35,20 @@ remotes::install_github("sidora-tools/sidora.core")
 library(sidora.core)
 require(RMariaDB)
 
-credential_file <- path.expand(params$cred_file)
-eager_output_dir <- path.expand(params$eager_output_dir)
-stats_table <- paste0(eager_output_dir, "/multiqc/multiqc_data/multiqc_general_stats.txt")
-snp_coverage_fns <- Sys.glob(paste0(eager_output_dir, "/genotyping/*_eigenstrat_coverage.txt"))
-
-## When both ssDNA and dsDNA libraries exist, prefer ssDNA data. dsDNA data is ignored.
-## 11/09/2021 Same as poseidon package creation.
-if ( length(snp_coverage_fns) > 1 ){
-  snp_coverage <- snp_coverage_fns[grepl("single_eigenstrat_coverage", snp_coverage_fns)]
-} else {
-  snp_coverage <- snp_coverage_fns[1]
-}
-
-sex_det_file <- Sys.glob(paste0(eager_output_dir, "/sex_determination/SexDet.txt"))
+# credential_file <- path.expand(params$cred_file)
+# eager_output_dir <- path.expand(params$eager_output_dir)
+# stats_table <- paste0(eager_output_dir, "/multiqc/multiqc_data/multiqc_general_stats.txt")
+# snp_coverage_fns <- Sys.glob(paste0(eager_output_dir, "/genotyping/*_eigenstrat_coverage.txt"))
+# 
+# ## When both ssDNA and dsDNA libraries exist, prefer ssDNA data. dsDNA data is ignored.
+# ## 11/09/2021 Same as poseidon package creation.
+# if ( length(snp_coverage_fns) > 1 ){
+#   snp_coverage_file <- snp_coverage_fns[grepl("single_eigenstrat_coverage", snp_coverage_fns)]
+# } else {
+#   snp_coverage_file <- snp_coverage_fns[1]
+# }
+# 
+# sex_det_file <- Sys.glob(paste0(eager_output_dir, "/sex_determination/SexDet.txt"))
 
 ## Function to infer genetic sex from x/y rates
 infer_sex <- function(sex_det){
@@ -100,7 +102,7 @@ Individuals that have too few covered SNPs (< 10,000) for population genetic ana
 
 ```{r gather snp coverage data, echo=FALSE, message=FALSE}
 ## Load and parse coverage stats
-snp_cov<-read_tsv(snp_coverage, col_names=c("#Sample", "#SNPs_Covered", "#SNPs_Total"), col_types='cii', skip=1) %>%
+snp_cov<-read_tsv(snp_coverage_file, col_names=c("#Sample", "#SNPs_Covered", "#SNPs_Total"), col_types='cii', skip=1) %>%
   rename("Sample"="#Sample","# SNPs Covered" = "#SNPs_Covered", "Out of a maximum of" = "#SNPs_Total")
 
 bad_cov <- which(snp_cov$`# SNPs Covered` < 10000)
@@ -118,7 +120,7 @@ sex_det <- read_tsv(sex_det_file, col_names=c("#Sample", "#SnpsAut", "#SNPsX", "
 
 ```{r arch_IDs from pandora, message=FALSE, include=FALSE}
 ## Load ArchIDs from pandora using sidora
-con <- get_pandora_connection(credential_file)
+con <- get_pandora_connection(params$cred_file)
 pandora_data <- get_df("TAB_Individual", con) %>% 
   filter(`individual.Full_Individual_Id` %in% sex_det$Sample) %>%
   select(`individual.Full_Individual_Id`, `individual.Archaeological_ID`) %>%
