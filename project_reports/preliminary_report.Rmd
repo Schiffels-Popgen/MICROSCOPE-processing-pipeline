@@ -64,7 +64,7 @@ infer_sex <- function(sex_det){
 # Descriptive statistics of sequencing data
 
 ```{r load_general_stats, echo=FALSE, message=FALSE}
-library_info <- read_tsv(stats_table) %>%
+library_info <- read_tsv(params$stats_table) %>%
   filter(!grepl("_S0_",Sample)) %>% 
   filter(grepl("TF|SG",Sample)) %>% 
   select(Sample,
@@ -81,7 +81,7 @@ library_info %>% kable(format.args=list(big.mark = ',', digits=3))  %>% kable_st
 ```{r pandora, eval=FALSE, include=FALSE}
 ### NOT RUN DURING KNIT. FOR LOCAL INTERACTIVE RUNNING.
 ## Loading pandora and using mounted data is hard because of two different VPNs. Download pandora table, save to file then load in next chunk while knitting.
-con <- get_pandora_connection(credential_file)
+con <- get_pandora_connection(params$cred_file)
 pandora_data <- get_df("TAB_Individual", con) %>% 
   filter(`individual.Full_Individual_Id` %in% sex_det$Sample) %>%
   select(`individual.Full_Individual_Id`, `individual.Archaeological_ID`) %>%
@@ -102,7 +102,7 @@ Individuals that have too few covered SNPs (< 10,000) for population genetic ana
 
 ```{r gather snp coverage data, echo=FALSE, message=FALSE}
 ## Load and parse coverage stats
-snp_cov<-read_tsv(snp_coverage_file, col_names=c("#Sample", "#SNPs_Covered", "#SNPs_Total"), col_types='cii', skip=1) %>%
+snp_cov<-read_tsv(params$snp_coverage_file, col_names=c("#Sample", "#SNPs_Covered", "#SNPs_Total"), col_types='cii', skip=1) %>%
   rename("Sample"="#Sample","# SNPs Covered" = "#SNPs_Covered", "Out of a maximum of" = "#SNPs_Total")
 
 bad_cov <- which(snp_cov$`# SNPs Covered` < 10000)
@@ -112,7 +112,7 @@ good_cov_inds <- snp_cov$Sample[-bad_cov]
 
 ```{r gather sexdet data, message=FALSE, include=FALSE}
 ## Load and parse sex determination stats.
-sex_det <- read_tsv(sex_det_file, col_names=c("#Sample", "#SnpsAut", "#SNPsX", "#SnpsY", "NrAut", "NrX", "NrY", "x-rate", "y-rate"), col_types='ciiiiiidd', skip=1) %>%
+sex_det <- read_tsv(params$sex_det_file, col_names=c("#Sample", "#SnpsAut", "#SNPsX", "#SnpsY", "NrAut", "NrX", "NrY", "x-rate", "y-rate"), col_types='ciiiiiidd', skip=1) %>%
   separate(`#Sample`, into=c("Sample"), sep="[._]", extra='drop') %>%
   select(`Sample`, `x-rate`, `y-rate`) %>%
   infer_sex()
@@ -144,7 +144,7 @@ snp_cov_sex_pandora %>% kable(format.args=list(big.mark = ',')) %>% kable_stylin
 The following figure shows the relative coverage of each individual on the X and Y chromosomes, and the associated error bars for each measure, as well as the expected position for males and females on such a plot. The expected ranges displayed here were used as the cutoffs for the inference of genetic sex shown in the table on page 2.
 
 ```{r sexdet plot, echo=FALSE, fig.height=7, fig.width=6, message=FALSE}
-sex_det <- read_tsv(sex_det_file, col_names=c("#Sample", "#SnpsAut", "#SNPsX", "#SnpsY", "NrAut", "NrX", "NrY", "x-rate", "y-rate", "Err(x-rate)", "Err(y-rate)"), col_types='ciiiiiidddd', skip=1) %>%
+sex_det <- read_tsv(params$sex_det_file, col_names=c("#Sample", "#SnpsAut", "#SNPsX", "#SnpsY", "NrAut", "NrX", "NrY", "x-rate", "y-rate", "Err(x-rate)", "Err(y-rate)"), col_types='ciiiiiidddd', skip=1) %>%
   separate(`#Sample`, into=c("Sample"), sep="[._]", extra='drop') %>%
   mutate(xmin=`x-rate`-`Err(x-rate)`,
          xmax=`x-rate`+`Err(x-rate)`,
