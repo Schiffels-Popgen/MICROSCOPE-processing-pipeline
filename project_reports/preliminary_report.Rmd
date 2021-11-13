@@ -127,7 +127,7 @@ good_cov_inds <- snp_cov$Sample[-bad_cov]
 sex_det <- read_tsv(params$sex_det_file, col_names=c("#Sample", "#SnpsAut", "#SNPsX", "#SnpsY", "NrAut", "NrX", "NrY", "x-rate", "y-rate"), col_types='ciiiiiidd', skip=1) %>%
   separate(`#Sample`, into=c("Sample"), sep="[._]", extra='drop') %>%
   select(`Sample`, `x-rate`, `y-rate`) %>%
-  infer_sex()
+  infer_sex(sex_cutoffs=sex_cutoffs)
 ```
 
 ```{r arch_IDs from pandora, message=FALSE, include=FALSE}
