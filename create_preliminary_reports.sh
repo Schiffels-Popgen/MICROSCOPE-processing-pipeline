@@ -1,5 +1,29 @@
 #!/usr/bin/env bash
 
+## Parse CLI args.
+TEMP=`getopt -q -o hf --long help,force -n 'create_preliminary_reports.sh' -- "$@"`
+eval set -- "$TEMP"
+
+## Helptext function
+function Helptext {
+    echo -ne "\t Usage: create_preliminary_reports.sh [-f] \n\n"
+    echo -ne "This script will copmare all completed eager runs with all completed reports and create preliminary reports for any runs that\n\tare newer than the associated preliminary report or do not have an associated preliminary report.\n\n"
+    echo -ne "options:\n"
+    echo -ne "-h, --help\t\tPrint this text and exit.\n"
+    echo -ne "-f, --force\t\tForce recreation of preliminary reports for all finished eager runs.\n"
+}
+
+force_remake="FALSE"
+
+while true ; do
+    case "$1" in
+        -f|--force) force_remake="TRUE"; shift 1;;
+        -h|--help) Helptext; exit 0 ;;
+        --) break;;
+        *) echo -e "Invalid option provided.\n"; Helptext; exit 1;; ## Should never trigger since $TEMP has had invalid options removed. Good to have for dev
+    esac
+done
+
 report_knitter="/home/thiseas_christos_lamnidis/Software/github/Schiffels-Popgen/MICROSCOPE-processing-pipeline/project_reports/knit_preliminary_report.R"
 report_template="/r1/people/thiseas_christos_lamnidis/Software/github/Schiffels-Popgen/MICROSCOPE-processing-pipeline/project_reports/preliminary_report.Rmd"
 cred_file="~/Software/github/Schiffels-Popgen/MICROSCOPE-processing-pipeline/.eva_credentials"
@@ -24,7 +48,7 @@ done
 for idx in ${!finished_runs[@]}; do
     batch_Id=$(echo ${finished_runs[${idx}]} | rev | cut -f 3 -d '/' | rev)
     batch_name=$(echo ${batch_Id} | rev | cut -f1 -d "-" | rev)
-    if [[ ${finished_runs[${idx}]} -nt ${expected_outputs[${idx}]} ]]; then
+    if [[ ${force_remake} == "TRUE" || ${finished_runs[${idx}]} -nt ${expected_outputs[${idx}]} ]]; then
         ## Infer filepaths for snp_coverage, sex det results and general stats table
         ##  When multiple snp coverage files exist (ssDNA + dsDNA) they get sorted alphabetically.
         ##  Take the last by index to prefer ssDNA when multiple files exist (Same as poseidon package creation).
