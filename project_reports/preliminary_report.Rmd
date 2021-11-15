@@ -86,7 +86,8 @@ library_info <- read_tsv(params$stats_table) %>%
     "% of Sequence Duplication" = `Picard_mqc-generalstats-picard-PERCENT_DUPLICATION`,
     "Damage 1st bp 3'" = `DamageProfiler_mqc-generalstats-damageprofiler-3_Prime1`
          ) %>%
-  mutate(`% of Sequence Duplication`=`% of Sequence Duplication`*100)
+  mutate(`% of Sequence Duplication`=`% of Sequence Duplication`*100) %>%
+  arrange(Sample)
 library_info %>% kable(format.args=list(big.mark = ',', digits=3))  %>% kable_styling(full_width=T)
 ```
 \newpage
@@ -146,7 +147,9 @@ RMariaDB::dbDisconnect(con)
 
 ```{r print coverage_sexdet_arch_id table, echo=FALSE, message=FALSE}
 sex_det_pandora <- full_join(sex_det, pandora_data, by="Sample")
-snp_cov_sex_pandora <- full_join(snp_cov, sex_det_pandora, by="Sample") %>% select(`Sample`, `Archaeological ID`, `Genetic Sex`, `# SNPs Covered`, `Out of a maximum of`)
+snp_cov_sex_pandora <- full_join(snp_cov, sex_det_pandora, by="Sample") %>% select(`Sample`, `Archaeological ID`, `Genetic Sex`, `# SNPs Covered`, `Out of a maximum of`) %>%
+  arrange(Sample)
+
 snp_cov_sex_pandora %>% kable(format.args=list(big.mark = ',')) %>% kable_styling(latex_options = "hold_position") %>%
   row_spec(bad_cov, bold = F, color = "red")
 ```
