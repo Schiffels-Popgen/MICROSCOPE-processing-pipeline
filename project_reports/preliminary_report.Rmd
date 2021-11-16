@@ -115,7 +115,8 @@ Individuals that have too few covered SNPs (< 10,000) for population genetic ana
 
 ```{r gather snp coverage data, echo=FALSE, message=FALSE}
 ## Load and parse coverage stats
-snp_cov<-read_tsv(params$snp_coverage_file, col_names=c("#Sample", "#SNPs_Covered", "#SNPs_Total"), col_types='cii', skip=1) %>%
+snp_cov<-read_tsv(params$snp_coverage_file, col_names=c("#Sample", "#SNPs_Covered", "#SNPs_Total"), col_types='cii', skip=1) %>% 
+  arrange(Sample) %>% ## Sort by individual ID so bad_cov gets the correct indices for highlighting in the table.
   rename("Sample"="#Sample","# SNPs Covered" = "#SNPs_Covered", "Out of a maximum of" = "#SNPs_Total")
 
 bad_cov <- which(snp_cov$`# SNPs Covered` < 10000)
