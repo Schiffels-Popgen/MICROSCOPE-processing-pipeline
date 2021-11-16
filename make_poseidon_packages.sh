@@ -21,6 +21,9 @@ for seq_batch in $(find /mnt/archgen/MICROSCOPE/eager_outputs/* -maxdepth 0 ! -p
 
         sed -i -e ${regex} /mnt/archgen/MICROSCOPE/poseidon_packages/${batch_name}/POSEIDON.yml
         rename -e ${regex} /mnt/archgen/MICROSCOPE/poseidon_packages/${batch_name}/pileupcaller.*.txt
+        ## Remove trailing .txt from path names. Needed for loading the data into R with admixr.
+        sed -i -e 's/.txt$//' /mnt/archgen/MICROSCOPE/poseidon_packages/${batch_name}/POSEIDON.yml
+        rename -e 's/.txt$//' /mnt/archgen/MICROSCOPE/poseidon_packages/${batch_name}/${batch_name}*txt
 
 
     ## If no single stranded genotypes exist, use double stranded library data for genotypes instead.
@@ -39,17 +42,21 @@ for seq_batch in $(find /mnt/archgen/MICROSCOPE/eager_outputs/* -maxdepth 0 ! -p
 
         sed -i -e ${regex} /mnt/archgen/MICROSCOPE/poseidon_packages/${batch_name}/POSEIDON.yml
         rename -e ${regex} /mnt/archgen/MICROSCOPE/poseidon_packages/${batch_name}/pileupcaller.*.txt
+        ## Remove trailing .txt from path names. Needed for loading the data into R with admixr.
+        sed -i -e 's/.txt$//' /mnt/archgen/MICROSCOPE/poseidon_packages/${batch_name}/POSEIDON.yml
+        rename -e 's/.txt$//' /mnt/archgen/MICROSCOPE/poseidon_packages/${batch_name}/${batch_name}*txt
+
     fi
 done
 
 ## Gather all site ids
-cat /mnt/archgen/MICROSCOPE/poseidon_packages/*/*ind.txt | cut -c1-3 >/mnt/archgen/MICROSCOPE/poseidon_packages/Sites.txt
+cat /mnt/archgen/MICROSCOPE/poseidon_packages/*/*ind | cut -c1-3 >/mnt/archgen/MICROSCOPE/poseidon_packages/Sites.txt
 
 ## Construct list of site names, lat and lon from pandora
 Rscript /mnt/archgen/MICROSCOPE/site_ids_to_names.R
 
 ## Set the population field in ind file to the Site ID
-for ind_f in /mnt/archgen/MICROSCOPE/poseidon_packages/*/*ind.txt; do
+for ind_f in /mnt/archgen/MICROSCOPE/poseidon_packages/*/*ind; do
     awk -v OFS="\t" -F "\t" '{$3=substr($1,1,3); print $0}' ${ind_f} >${ind_f}.2
     mv ${ind_f} ${ind_f}.old
     mv ${ind_f}.2 ${ind_f}
