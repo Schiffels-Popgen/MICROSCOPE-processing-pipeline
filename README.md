@@ -47,6 +47,9 @@ Would you like me to try?
 ```
 
 ## create_preliminary_reports.sh
+>  ⚠️ For batches that contain genotypes from both ssDNA and dsDNA libraries, the **ssDNA libraries are preferred and dsDNA genotypes
+>   are ignored**!
+
 This script will copmare all completed eager runs with all completed reports and create preliminary reports for any eager runs
 that are newer than the associated preliminary report or do not have an associated preliminary report.  
 Under the hood, this script finds the correct sex determination, snp coverage, and general stats output files from each batch
@@ -97,9 +100,10 @@ Options:
 
 ## make_poseidon_packages.sh
  > ⚠️ This script and its helpers are a work in progress and will eventually be replaced by a script that includes PANDORA queries for information.
+
 Compares the creation time of the genotype dataset in the eager output and the `POSEIDON.yml` of a batch to determine which
 poseidon packages need creating/updating. Those pacakges will be recreated from scratch with `trident init`. For batches
-that contain genotypes from both ssDNA and dsDNA libraries, the **ssDNA libraries are preferred and dsDNA genotypes are ignored**.
+that contain genotypes from both ssDNA and dsDNA libraries, the **ssDNA libraries are preferred and dsDNA genotypes are ignored**!
 Through under the hood calls to `site_ids_to_names.R`, Site names and IDs are pulled from PANDORA, and added to the package janno file.
 
 
