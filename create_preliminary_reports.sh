@@ -26,7 +26,7 @@ done
 
 report_knitter="/home/thiseas_christos_lamnidis/Software/github/Schiffels-Popgen/MICROSCOPE-processing-pipeline/project_reports/knit_preliminary_report.R"
 report_template="/r1/people/thiseas_christos_lamnidis/Software/github/Schiffels-Popgen/MICROSCOPE-processing-pipeline/project_reports/preliminary_report.Rmd"
-cred_file="~/Software/github/Schiffels-Popgen/MICROSCOPE-processing-pipeline/.eva_credentials"
+cred_file="~/Software/github/Schiffels-Popgen/MICROSCOPE-processing-pipeline/.credentials"
 preliminary_report_dir="/mnt/archgen/MICROSCOPE/reports"
 
 ## Get list of completed runs (MQC report exists)
