@@ -160,7 +160,7 @@ snp_cov_sex_pandora %>% kable(format.args=list(big.mark = ',')) %>% kable_stylin
 
 The following figure shows the relative coverage of each individual on the X and Y chromosomes, and the associated error bars for each measure, as well as the expected position for males and females on such a plot. The expected ranges displayed here were used as the cutoffs for the inference of genetic sex shown in the table on page 2.
 
-```{r sexdet plot, echo=FALSE, fig.height=7, fig.width=6, message=FALSE}
+```{r sexdet plot, echo=FALSE, fig.height=7, fig.width=6, message=FALSE, warning=FALSE}
 sex_det <- read_tsv(params$sex_det_file, col_names=c("#Sample", "#SnpsAut", "#SNPsX", "#SnpsY", "NrAut", "NrX", "NrY", "x-rate", "y-rate", "Err(x-rate)", "Err(y-rate)"), col_types='ciiiiiidddd', skip=1) %>%
   separate(`#Sample`, into=c("Sample"), sep="[._]", extra='drop') %>%
   mutate(xmin=`x-rate`-`Err(x-rate)`,
@@ -176,7 +176,7 @@ ggplot(sex_det) +
   geom_rect(data=sex_cutoffs, aes(xmin=xmin, xmax=xmax, ymin=ymin,ymax=ymax, fill=`Expected ranges`), alpha=0.4) +
   geom_errorbar(aes(x=x, ymin=ymin, ymax=ymax, alpha=`Total Snps`), width=0) +
   geom_errorbarh(aes(y=y, xmin=xmin, xmax=xmax, alpha=`Total Snps`)) +
-  geom_text_repel(aes(label=Sample, x=x, y=y), max.overlaps = 20, size=2) +
+  geom_text_repel(aes(label=Sample, x=x, y=y), max.overlaps = 50, size=2) +
   scale_alpha(range=c(0.3,1), labels=function(x) {format(x, big.mark = ",", decimal.mark = ".", scientific = F)}) +
   theme_classic() +
   theme(legend.position = 'bottom', 
