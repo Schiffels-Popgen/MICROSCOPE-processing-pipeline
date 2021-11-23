@@ -35,6 +35,7 @@ for seq_batch in $(find /mnt/archgen/MICROSCOPE/eager_outputs/* -maxdepth 0 ! -p
 
     ## If no single stranded genotypes exist, use double stranded library data for genotypes instead.
     elif [[ ${seq_batch}/genotyping/pileupcaller.double.geno.txt -nt poseidon_packages/${batch_name}/POSEIDON.yml ]]; then
+        update_switch="on"
         echo "DSLib found for ${batch_name}"
         regex="s/pileupcaller.double/${batch_name}/"
         # echo $(basename $seq_batch)
