@@ -7,13 +7,13 @@ update_switch="off" ## Do any packages need updating? Then update al janno files
 for seq_batch in $(find /mnt/archgen/MICROSCOPE/eager_outputs/* -maxdepth 0 ! -path "*2021-01-27-Prague_bams"); do
     batch_name=$(basename ${seq_batch})
     ## Prefer single stranded to double stranded library data for genotypes.
-    if [[ ${seq_batch}/genotyping/pileupcaller.single.geno.txt -nt poseidon_packages/${batch_name}/POSEIDON.yml ]]; then
+    if [[ ${seq_batch}/genotyping/pileupcaller.single.geno.txt -nt /mnt/archgen/MICROSCOPE/poseidon_packages/${batch_name}/POSEIDON.yml ]]; then
         update_switch="on"
         echo "SSLib found for ${batch_name}"
         ## If the directory already exists, delete it so trident doesn't complain
         if [[ -d "poseidon_packages/${batch_name}" ]]; then
             echo "Deleting existing directory poseidon_packages/${batch_name} to recreate package with new genotypes."
-            rm -r poseidon_packages/${batch_name}
+            rm -r /mnt/archgen/MICROSCOPE/poseidon_packages/${batch_name}
         fi
         regex="s/pileupcaller.single/${batch_name}/"
         # echo $(basename $seq_batch)
@@ -34,9 +34,14 @@ for seq_batch in $(find /mnt/archgen/MICROSCOPE/eager_outputs/* -maxdepth 0 ! -p
 
 
     ## If no single stranded genotypes exist, use double stranded library data for genotypes instead.
-    elif [[ ${seq_batch}/genotyping/pileupcaller.double.geno.txt -nt poseidon_packages/${batch_name}/POSEIDON.yml ]]; then
+    elif [[ ${seq_batch}/genotyping/pileupcaller.double.geno.txt -nt /mnt/archgen/MICROSCOPE/poseidon_packages/${batch_name}/POSEIDON.yml ]]; then
         update_switch="on"
         echo "DSLib found for ${batch_name}"
+        ## If the directory already exists, delete it so trident doesn't complain
+        if [[ -d "poseidon_packages/${batch_name}" ]]; then
+            echo "Deleting existing directory poseidon_packages/${batch_name} to recreate package with new genotypes."
+            rm -r /mnt/archgen/MICROSCOPE/poseidon_packages/${batch_name}
+        fi
         regex="s/pileupcaller.double/${batch_name}/"
         # echo $(basename $seq_batch)
         trident init \
@@ -81,7 +86,7 @@ if [[ ${update_switch} == "on" ]]; then
 
         temp_site_list="$(dirname ${janno_f})/temp_site_list"
         echo -e "ID\tSite\tLatitude\tLongitude" > ${temp_site_list}
-        while read r; do grep $r poseidon_packages/Sites_Info.txt ; done < <(awk '{print $19}' ${temp_janno}) >>${temp_site_list}
+        while read r; do grep $r /mnt/archgen/MICROSCOPE/poseidon_packages/Sites_Info.txt ; done < <(awk '{print $19}' ${temp_janno}) >>${temp_site_list}
         paste ${temp_site_list} ${temp_janno} | awk -F '\t' -v OFS='\t' '{$10=$2; $11=$3; $12=$4; print $0}' | cut -f 5- >${temp_janno}_2
         mv ${janno_f} ${janno_f}.old
         mv ${temp_janno}_2 ${janno_f}
