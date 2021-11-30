@@ -86,7 +86,7 @@ for idx in ${!finished_runs[@]}; do
             --distance ${distace_matrix} \
             --distance_ids ${distace_matrix}.id \
             --output_pdf_name ${expected_outputs[${idx}]}
-    elif [[ ${distace_matrix} -ot ${finished_runs[${idx}]}) ]]; then
+    elif [[ ${distace_matrix} -ot ${finished_runs[${idx}]} ]]; then
         ## Error message when the pairwise distances are outdated.
         echo "Distance matrix has not been updated since package \'${batch_Id}\' was updated."
         echo "Consider updating the distance file, or use '-f' to force report (re)creation."
