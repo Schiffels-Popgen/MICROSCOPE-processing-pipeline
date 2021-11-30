@@ -85,7 +85,7 @@ render(reportTemplate,
         pmmr_results_fn = opts$pmmr_fn,
         pca_bg_annotation = opts$pca_bg_annotation,
         pairwise_distance_fn = opts$pairwise_distance_fn,
-        pairwise_distance_id = opts$pairwise_distance_id,
+        pairwise_distance_id = opts$pairwise_distance_id
         ),
     output_file = opts$output_name,
     output_dir = dirname(opts$output_name)
