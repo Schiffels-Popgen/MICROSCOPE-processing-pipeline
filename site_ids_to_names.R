@@ -14,7 +14,7 @@ sites_list <- readr::read_tsv("/mnt/archgen/MICROSCOPE/poseidon_packages/Sites.t
 
 results <- inner_join(complete_pandora_table, sites_list, by=c("site.Site_Id"="Site")) %>% 
     select(site.Site_Id, site.Name, site.Latitude, site.Longitude) %>% 
-    mutate(site.Longitude=round(site.Longitude,5), site.Latitude=round(site.Latitude,5)) %>%
+    mutate(site.Longitude=round(site.Longitude,5), site.Latitude=round(site.Latitude,5), site.Name=str_replace_all(site.Name, '"','')) %>%
     replace_na(list(site.Longitude="n/a", site.Latitude="n/a")) %>%
     unique()
 

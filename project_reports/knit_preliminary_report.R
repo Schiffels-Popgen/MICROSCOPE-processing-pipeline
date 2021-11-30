@@ -10,7 +10,7 @@ firstup <- function(x) {
 }
 
 ## Parse arguments ----------------------------
-parser <- OptionParser(usage = "%prog -r preliminary_report.Rmd -c .credentials ")
+parser <- OptionParser(usage = "%prog -r preliminary_report.Rmd -c .credentials -o output.pdf -s snp_coverage.txt -d sexdet.txt -t stats_table.tsv -b my_batch_name")
 parser <- add_option(parser, c("-r", "--report_template"), type = 'character', 
                      action = "store", dest = "template", 
                      help = "Path to the report template Rmd.")
