@@ -102,17 +102,6 @@ library_info <- read_tsv(params$stats_table) %>%
 library_info %>% kable(format.args=list(big.mark = ',', digits=3))  %>% kable_styling(full_width=T)
 ```
 \newpage
-```{r pandora, eval=FALSE, include=FALSE}
-### NOT RUN DURING KNIT. FOR LOCAL INTERACTIVE RUNNING.
-## Loading pandora and using mounted data is hard because of two different VPNs. Download pandora table, save to file then load in next chunk while knitting.
-con <- get_pandora_connection(params$cred_file)
-pandora_data <- get_df("TAB_Individual", con) %>% 
-  filter(`individual.Full_Individual_Id` %in% sex_det$Sample) %>%
-  select(`individual.Full_Individual_Id`, `individual.Archaeological_ID`) %>%
-  rename("Sample" = `individual.Full_Individual_Id`, "Archaeological ID" = `individual.Archaeological_ID`)
-RMariaDB::dbDisconnect(con)
-write_tsv(pandora_data, "archaeological_ids.txt")
-```
 
 # Sex determination and SNP coverage
 
@@ -152,10 +141,6 @@ pandora_data <- get_df("TAB_Individual", con) %>%
   select(`individual.Full_Individual_Id`, `individual.Archaeological_ID`) %>%
   rename("Sample" = `individual.Full_Individual_Id`, "Archaeological ID" = `individual.Archaeological_ID`)
 RMariaDB::dbDisconnect(con)
-
-## Load ArchIDs from pandora
-### For interactive use.
-# pandora_data <- read_tsv("archaeological_ids.txt", col_types='cc')
 ```
 
 ```{r print coverage_sexdet_arch_id table, echo=FALSE, message=FALSE}
@@ -219,7 +204,7 @@ The colour of the points indicates the relative confidence around the pMMR. Red 
 pmmr_data<-read_tsv(params$pmmr_results_fn) %>%
   mutate(Label=paste(Ind1,Ind2, sep="-"), colour=if_else(nSNPs < 50, "<50 SNPs", if_else(nSNPs < 100, "<100 SNPs","100+ SNPs"))) %>%
   filter(!is.na(pMismatch) )#%>% ## Remove rows with p Mismatch == NA which are invdividuals with 0 overlapping SNPs. 
-  # filter(!grepl(paste(bad_cov_inds,collapse="|"), Label))
+
 ggplot(pmmr_data, aes(x=fct_reorder(Label, pMismatch), y=pMismatch, col=factor(colour, levels=c("<50 SNPs","<100 SNPs","100+ SNPs")))) +
   scale_color_manual(values=c("<50 SNPs"="red","<100 SNPs"="grey","100+ SNPs"="black")) +
   labs(color = "number of\noverlapping\nSNPs") +
@@ -256,9 +241,6 @@ exclude_inds <- janno_info %>% filter(Publication_Status == "BiaginiEJHG2019") %
 
 ##Load list of colours, population groupings and 3 character codes for modern pops.
 pop_labels <- read_tsv(params$pca_bg_annotation, col_names = c("pop","label","region","colour"), col_types = 'ccci')
-
-## Load list of WEur populations
-# west_eurasian_pops <- read_tsv("~/mount/forged_packages/microscope_pca/west_eurasian_poplist.txt", col_names = "Pop", col_types = 'c') 
 ```
 
 ```{r subset distances, include=FALSE}
@@ -266,7 +248,6 @@ pop_labels <- read_tsv(params$pca_bg_annotation, col_names = c("pop","label","re
 indices <- ((dm_inds$Population %in% pop_labels$pop & ! (dm_inds$Individual %in% exclude_inds$Individual_ID)) | dm_inds$Individual %in% good_cov_inds)
 ## Remove sharing with unused individuals
 dm <- dm[c(indices),c(indices)]
-# dm <- na.omit(dm) ## Remove rows of NAs (when an ancient individual has no coverage)
 ```
 
 The following plot shows how the ancient individuals (in black) relate to present-day West Eurasian populations. The distance between individuals roughly correlates with genetic distances. The plot only includes ancient individuals with sufficient genomic coverage (if any).
@@ -300,7 +281,8 @@ if (Chuvash_ind$PC2 < BedouinB_ind$PC2) {
 
 ggplot()+
   coord_equal() +
-  geom_text(data=components %>% filter(bg==T), aes(x=PC1, y=PC2, label=label, col=factor(colour)), alpha=0.4, size=2, show.legend=F) +
+  geom_text(data=components %>% filter(bg==T), aes(x=PC1, y=PC2, label=label, col=factor(colour)), 
+            alpha=0.4, size=2, show.legend=F) +
   scale_x_continuous(minor_breaks=seq(-2,2,0.005), breaks=seq(-2,2,0.01)) +
   scale_y_continuous(minor_breaks=seq(-2,2,0.005), breaks=seq(-2,2,0.01)) +
   theme_minimal() +

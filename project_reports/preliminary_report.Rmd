@@ -91,17 +91,6 @@ library_info <- read_tsv(params$stats_table) %>%
 library_info %>% kable(format.args=list(big.mark = ',', digits=3))  %>% kable_styling(full_width=T)
 ```
 \newpage
-```{r pandora, eval=FALSE, include=FALSE}
-### NOT RUN DURING KNIT. FOR LOCAL INTERACTIVE RUNNING.
-## Loading pandora and using mounted data is hard because of two different VPNs. Download pandora table, save to file then load in next chunk while knitting.
-con <- get_pandora_connection(params$cred_file)
-pandora_data <- get_df("TAB_Individual", con) %>% 
-  filter(`individual.Full_Individual_Id` %in% sex_det$Sample) %>%
-  select(`individual.Full_Individual_Id`, `individual.Archaeological_ID`) %>%
-  rename("Sample" = `individual.Full_Individual_Id`, "Archaeological ID" = `individual.Archaeological_ID`)
-RMariaDB::dbDisconnect(con)
-write_tsv(pandora_data, "archaeological_ids.txt")
-```
 
 # Sex determination and SNP coverage
 
@@ -141,10 +130,6 @@ pandora_data <- get_df("TAB_Individual", con) %>%
   select(`individual.Full_Individual_Id`, `individual.Archaeological_ID`) %>%
   rename("Sample" = `individual.Full_Individual_Id`, "Archaeological ID" = `individual.Archaeological_ID`)
 RMariaDB::dbDisconnect(con)
-
-## Load ArchIDs from pandora
-### For interactive use.
-# pandora_data <- read_tsv("archaeological_ids.txt", col_types='cc')
 ```
 
 ```{r print coverage_sexdet_arch_id table, echo=FALSE, message=FALSE}
