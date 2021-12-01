@@ -200,7 +200,7 @@ The pairwise genotype mismatch rate (pMMR) between different individuals, can be
 
 The colour of the points indicates the relative confidence around the pMMR. Red points are unreliable, gray points are somewhat reliable, and black points are reliable estimates of the pMMR. The numbers above each point correspond to the number of SNPs used in the calculation of the pMMR between each pair of individuals.
 
-```{r echo=FALSE, fig.height=5, fig.width=8.25, message=FALSE}
+```{r import and plot pMMR, echo=FALSE, fig.height=5, fig.width=8.25, message=FALSE}
 pmmr_data<-read_tsv(params$pmmr_results_fn) %>%
   mutate(Label=paste(Ind1,Ind2, sep="-"), colour=if_else(nSNPs < 50, "<50 SNPs", if_else(nSNPs < 100, "<100 SNPs","100+ SNPs"))) %>%
   filter(!is.na(pMismatch) )#%>% ## Remove rows with p Mismatch == NA which are invdividuals with 0 overlapping SNPs. 
@@ -260,7 +260,7 @@ The colour used in the plotting of present-day individuals indicates rough geogr
 * Central/North Europe : \textcolor[HTML]{E76BF3}{magenta}
 * Northeaster/Eastern Europe : \textcolor[HTML]{00BF7D}{green}
 
-```{r MDS and plot, echo=FALSE, fig.height=5, fig.width=7}
+```{r do MDS, echo=FALSE}
 components <- stats::cmdscale(dm)
 colnames(components) <- c("PC1", "PC2")
 components <- components %>% 
@@ -278,7 +278,9 @@ if (Chuvash_ind$PC1 > BedouinB_ind$PC1) {
 if (Chuvash_ind$PC2 < BedouinB_ind$PC2) {
   components <- components %>% mutate(PC2 = -PC2)
 }
+```
 
+```{r plot MDS, echo=FALSE, fig.height=6, fig.width=7}
 ggplot()+
   coord_equal() +
   geom_text(data=components %>% filter(bg==T), aes(x=PC1, y=PC2, label=label, col=factor(colour)), 
@@ -286,7 +288,8 @@ ggplot()+
   scale_x_continuous(minor_breaks=seq(-2,2,0.005), breaks=seq(-2,2,0.01)) +
   scale_y_continuous(minor_breaks=seq(-2,2,0.005), breaks=seq(-2,2,0.01)) +
   theme_minimal() +
-  geom_point(data=components %>% filter(bg==F), aes(x=PC1, y=PC2, shape=Ind)) +
+  geom_point(data=components %>% filter(bg==F), aes(x=PC1, y=PC2)) +
+  geom_text_repel(data=components %>% filter(bg==F), aes(x=PC1, y=PC2, label=Ind), max.overlaps = Inf) +
   xlab(paste0("PC1")) +
   ylab(paste0("PC2")) +
   labs(shape = "Ancient Individual")
