@@ -34,16 +34,16 @@ parser <- add_option(parser, c("-p", "--pmmr_results"), type = 'character',
                     help = "The path to the pMMR results file.")
 parser <- add_option(parser, c("-j", "--janno_fn"), type = 'character',
                     action = "store", dest = "janno_fn",
-                    help = "The path to the pMMR results file.")
+                    help = "The path to the package janno file.")
 parser <- add_option(parser, c("-G", "--GenoFile"), type = 'character',
                     action = "store", dest = "geno_fn",
-                    help = "The path to the eigenstrat .geno file.")
+                    help = "The path to the package eigenstrat .geno file.")
 parser <- add_option(parser, c("-S", "--SnpFile"), type = 'character',
                     action = "store", dest = "snp_fn",
-                    help = "The path to the eigenstrat .snp file.")
+                    help = "The path to the package eigenstrat .snp file.")
 parser <- add_option(parser, c("-I", "--IndFile"), type = 'character',
                     action = "store", dest = "ind_fn",
-                    help = "The path to the eigenstrat .ind file.")
+                    help = "The path to the package eigenstrat .ind file.")
 parser <- add_option(parser, c("-b", "--batch_name"), type = 'character',
                      action = "store", dest = "batch_name",
                      help = "The name of the batch, to be capitalised and used as a subtitle for the report.")
@@ -83,7 +83,7 @@ render(reportTemplate,
         poseidon_ind = opts$ind_fn,
         poseidon_janno = opts$janno_fn,
         pmmr_results_fn = opts$pmmr_fn,
-        pca_bg_annotation = opts$pca_bg_annotation,
+        pca_bg_annotation = opts$bg_annotation_fn,
         pairwise_distance_fn = opts$pairwise_distance_fn,
         pairwise_distance_id = opts$pairwise_distance_id
         ),
