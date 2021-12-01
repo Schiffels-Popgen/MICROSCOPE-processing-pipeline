@@ -30,8 +30,10 @@ cred_file="~/Software/github/Schiffels-Popgen/MICROSCOPE-processing-pipeline/.cr
 long_report_dir="/mnt/archgen/MICROSCOPE/reports"
 base_poseidon_package_dir="/mnt/archgen/MICROSCOPE/poseidon_packages"
 base_analysis_dir="/mnt/archgen/MICROSCOPE/automated_analysis"
-bg_annotation="~/Software/github/Schiffels-Popgen/MICROSCOPE-processing-pipeline/project_reports/assets/bg_annotation.txt"
+bg_annotation_fn="/r1/people/thiseas_christos_lamnidis/Software/github/Schiffels-Popgen/MICROSCOPE-processing-pipeline/project_reports/assets/bg_annotation.txt"
 distace_matrix="/mnt/archgen/MICROSCOPE/microscope_pca/pairwise_distances.mdist"
+janno_fn="/mnt/archgen/MICROSCOPE/forged_packages/microscope_pca/microscope_pca.janno"
+
 
 ## Get list of completed runs (MQC report exists)
 eager_out_dir="/mnt/archgen/MICROSCOPE/eager_outputs"
@@ -68,7 +70,6 @@ for idx in ${!finished_runs[@]}; do
         geno_fn=${base_poseidon_package_dir}/${batch_Id}/${batch_Id}.geno
         snp_fn=${base_poseidon_package_dir}/${batch_Id}/${batch_Id}.snp
         ind_fn=${base_poseidon_package_dir}/${batch_Id}/${batch_Id}.ind
-        janno_fn=${base_poseidon_package_dir}/${batch_Id}/${batch_Id}.janno
         echo "Creating long report for ${batch_Id} -> ${expected_outputs[${idx}]}"
         ${report_knitter} \
             --report_template ${report_template} \
@@ -82,10 +83,11 @@ for idx in ${!finished_runs[@]}; do
             --GenoFile ${geno_fn} \
             --SnpFile ${snp_fn} \
             --IndFile ${ind_fn} \
-            --bg_annotation_file ${bg_annotation} \
+            --bg_annotation_file ${bg_annotation_fn} \
             --distance ${distace_matrix} \
             --distance_ids ${distace_matrix}.id \
             --output_pdf_name ${expected_outputs[${idx}]}
+    # exit 0 ## For Testing
     elif [[ ${distace_matrix} -ot ${finished_runs[${idx}]} ]]; then
         ## Error message when the pairwise distances are outdated.
         echo "Distance matrix has not been updated since package \'${batch_Id}\' was updated."
