@@ -205,6 +205,7 @@ pmmr_data<-read_tsv(params$pmmr_results_fn) %>%
   mutate(Label=paste(Ind1,Ind2, sep="-"), colour=if_else(nSNPs < 50, "<50 SNPs", if_else(nSNPs < 100, "<100 SNPs","100+ SNPs"))) %>%
   filter(!is.na(pMismatch) )#%>% ## Remove rows with p Mismatch == NA which are invdividuals with 0 overlapping SNPs. 
 
+if (nrow(pmmr_data) > 1) {
 ggplot(pmmr_data, aes(x=fct_reorder(Label, pMismatch), y=pMismatch, col=factor(colour, levels=c("<50 SNPs","<100 SNPs","100+ SNPs")))) +
   scale_color_manual(values=c("<50 SNPs"="red","<100 SNPs"="grey","100+ SNPs"="black")) +
   labs(color = "number of\noverlapping\nSNPs") +
@@ -214,6 +215,9 @@ ggplot(pmmr_data, aes(x=fct_reorder(Label, pMismatch), y=pMismatch, col=factor(c
   theme(axis.text.x = element_text(angle=90, hjust=1, vjust=0.5), legend.title.align = 0.5) +
   xlab('') +
   ylab("pairwise genotype mismatch rate")
+} else {
+  print("Pairwise mismatch rate cannot be calculated for a single individual.")
+}
 ```
 \newpage
 
