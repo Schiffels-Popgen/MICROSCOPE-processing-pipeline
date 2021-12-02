@@ -121,7 +121,7 @@ snp_cov<-read_tsv(params$snp_coverage_file, col_names=c("#Sample", "#SNPs_Covere
 
 
 bad_cov <- which(snp_cov$`# SNPs Covered` < 10000)
-good_cov_inds <- snp_cov$Sample[-bad_cov]
+good_cov_inds <- snp_cov$Sample[which(snp_cov$`# SNPs Covered` >= 10000)]
 
 ```
 
@@ -171,7 +171,7 @@ ggplot(sex_det) +
   geom_point(aes(x=x, y=y, alpha=`Total Snps`), size=2.5) +
   geom_rect(data=sex_cutoffs, aes(xmin=xmin, xmax=xmax, ymin=ymin,ymax=ymax, fill=`Expected ranges`), alpha=0.4) +
   geom_errorbar(aes(x=x, ymin=ymin, ymax=ymax, alpha=`Total Snps`), width=0) +
-  geom_errorbarh(aes(y=y, xmin=xmin, xmax=xmax, alpha=`Total Snps`)) +
+  geom_errorbarh(aes(y=y, xmin=xmin, xmax=xmax, alpha=`Total Snps`), height=0) +
   geom_text_repel(aes(label=Sample, x=x, y=y), max.overlaps = 50, size=2) +
   scale_alpha(range=c(0.3,1), labels=function(x) {format(x, big.mark = ",", decimal.mark = ".", scientific = F)}) +
   theme_classic() +
@@ -287,12 +287,11 @@ if (Chuvash_ind$PC2 < BedouinB_ind$PC2) {
 ```{r plot MDS, echo=FALSE, fig.height=6, fig.width=7}
 ggplot()+
   coord_equal() +
-  geom_text(data=components %>% filter(bg==T), aes(x=PC1, y=PC2, label=label, col=factor(colour)), 
-            alpha=0.4, size=2, show.legend=F) +
   scale_x_continuous(minor_breaks=seq(-2,2,0.005), breaks=seq(-2,2,0.01)) +
   scale_y_continuous(minor_breaks=seq(-2,2,0.005), breaks=seq(-2,2,0.01)) +
-  theme_minimal() +
-  theme_classic(base_size=13) +
+  theme_minimal(base_size=13) +
+  geom_text(data=components %>% filter(bg==T), aes(x=PC1, y=PC2, label=label, col=factor(colour)), 
+            alpha=0.4, size=2, show.legend=F) +
   geom_point(data=components %>% filter(bg==F), aes(x=PC1, y=PC2)) +
   geom_text_repel(data=components %>% filter(bg==F), aes(x=PC1, y=PC2, label=Ind), max.overlaps = Inf, size=2.5) +
   xlab(paste0("PC1")) +
