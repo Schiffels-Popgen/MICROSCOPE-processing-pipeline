@@ -226,4 +226,4 @@ Options:
 		Path of the Ids for the plink pairwise distance matrix.
 ```
 
-> Currently the `-G`, `-S` and `-I` options are not used within the report, but are implemented for future use.
+> ⚠️ Currently the `-G`, `-S` and `-I` options are not used within the report, but are implemented for future use.
