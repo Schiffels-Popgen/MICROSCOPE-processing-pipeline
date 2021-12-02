@@ -20,7 +20,7 @@ params:
     pairwise_distance_id: "~/mount/microscope_pca/pairwise_distances.mdist.id"
     cred_file: "~/Software/github/Schiffels-Popgen/MICROSCOPE-processing-pipeline/.credentials"
     
-title: "Preliminary data report"
+title: "Extended preliminary data report"
 subtitle: "`r params$set_subtitle`"
 ---
 
