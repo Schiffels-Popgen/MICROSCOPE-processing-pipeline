@@ -3,7 +3,7 @@
 def helpMessage() {
   log.info"""
   =========================================
-  rare_variant_simulation_analysis v${workflow.manifest.version}
+  microscope_automated_analysis.nf
   =========================================
   Usage:
   The typical command for running the pipeline on sdag is as follows:
@@ -66,17 +66,17 @@ process pmmrCalculator {
     """
 }
 
-process background_pca {
-    conda 'bioconda::plink'
-    publishDir "${params.outdir}/assets/background_pca"
-    memory '1GB'
-    cpus 1
+// process background_pca {
+//     conda 'bioconda::plink'
+//     publishDir "${params.outdir}/assets/background_pca"
+//     memory '1GB'
+//     cpus 1
 
-    output:
+//     output:
     
 
-    script:
-    """
-    plink 
-    """
-}
+//     script:
+//     """
+//     plink 
+//     """
+// }
