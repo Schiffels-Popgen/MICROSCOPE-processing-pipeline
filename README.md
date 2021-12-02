@@ -159,14 +159,14 @@ the annotation file for present-day West Eurasian populations, for each batch th
 `knit_long_report.R`. The `-f` option can be provided to force recreation of all reports. This is useful in cases where the report 
 template has been updated, so all reports need updating.
 ```
-	 Usage:  extended.sh [-f] 
+	 Usage: create_long_reports.sh [-f] 
 
-This script will copmare all completed eager runs with all completed reports and create preliminary reports for any runs that
-	are newer than the associated preliminary report or do not have an associated preliminary report.
+This script will copmare all completed eager runs with all completed reports and create long reports for any runs that
+	are newer than the associated long report or do not have an associated long report.
 
 options:
 -h, --help		Print this text and exit.
--f, --force		Force recreation of preliminary reports for all finished eager runs.
+-f, --force		Force recreation of long reports for all finished eager runs.
 ```
 
 ## knit_long_report.R
