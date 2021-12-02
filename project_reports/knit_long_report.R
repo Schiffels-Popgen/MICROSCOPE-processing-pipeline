@@ -35,7 +35,7 @@ parser <- add_option(parser, c("-p", "--pmmr_results"), type = 'character',
                     help = "The path to the pMMR results file.")
 parser <- add_option(parser, c("-j", "--janno_fn"), type = 'character',
                     action = "store", dest = "janno_fn",
-                    help = "The path to the package janno file.")
+                    help = "The path to the forged meta-package janno file.")
 parser <- add_option(parser, c("-G", "--GenoFile"), type = 'character',
                     action = "store", dest = "geno_fn",
                     help = "The path to the package eigenstrat .geno file.")
