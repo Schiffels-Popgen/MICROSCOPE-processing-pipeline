@@ -1,2 +1,9 @@
 test_data/
 .credentials
+.jena_credentials
+.eva_credentials
+.nextflow*
+.gitignore
+work/
+.RData
+.Rhistory
