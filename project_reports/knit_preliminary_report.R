@@ -4,10 +4,12 @@ library(rmarkdown)
 library(optparse)
 library(stringr)
 
-firstup <- function(x) {
-  substr(x, 1, 1) <- toupper(substr(x, 1, 1))
+make_title <- function(x) {
+  x <- str_replace_all(x, "_"," ") ## Convert underscores to spaces
+  x <- str_to_title(x) ## Uppercase the first letter of each word. lowercase the rest
   x
 }
+
 
 ## Parse arguments ----------------------------
 parser <- OptionParser(usage = "%prog -r preliminary_report.Rmd -c .credentials -o output.pdf -s snp_coverage.txt -d sexdet.txt -t stats_table.tsv -b my_batch_name")
@@ -45,7 +47,7 @@ if(!file.exists(reportTemplate)) {
 }
 
 ## Capitalise first letter of batch name to use as a subtitle
-subtitle <- firstup(opts$batch_name)
+subtitle <- make_title(opts$batch_name)
 
 render(reportTemplate,
     params = list(
