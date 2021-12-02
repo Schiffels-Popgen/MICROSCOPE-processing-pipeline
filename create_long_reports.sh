@@ -92,5 +92,7 @@ for idx in ${!finished_runs[@]}; do
         ## Error message when the pairwise distances are outdated.
         echo "Distance matrix has not been updated since package \'${batch_Id}\' was updated."
         echo "Consider updating the distance file, or use '-f' to force report (re)creation."
+    else
+        echo "Long report for ${batch_Id} did not need updating. Skipping this batch."
     fi
 done
