@@ -6,15 +6,15 @@ output:
   html_document:
     df_print: paged
 params: 
-    set_subtitle: "potzneusiedl"
-    snp_coverage_file: "~/mount/eager_outputs/2021-09-09-potzneusiedl/genotyping/single_eigenstrat_coverage.txt"
-    sex_det_file: "~/mount/eager_outputs/2021-09-09-potzneusiedl/sex_determination/SexDet.txt"
-    stats_table: "~/mount/eager_outputs/2021-09-09-potzneusiedl/multiqc/multiqc_data/multiqc_general_stats.txt"
-    poseidon_geno: "~/mount/poseidon_packages/2021-09-09-potzneusiedl/2021-09-09-potzneusiedl.geno.txt"
-    poseidon_snp: "~/mount/poseidon_packages/2021-09-09-potzneusiedl/2021-09-09-potzneusiedl.snp.txt"
-    poseidon_ind: "~/mount/poseidon_packages/2021-09-09-potzneusiedl/2021-09-09-potzneusiedl.ind.txt"
+    set_subtitle: "Relic_samples"
+    snp_coverage_file: "~/mount/eager_outputs/2020-05-03-relic_samples/genotyping/double_eigenstrat_coverage.txt"
+    sex_det_file: "~/mount/eager_outputs/2020-05-03-relic_samples/sex_determination/SexDet.txt"
+    stats_table: "~/mount/eager_outputs/2020-05-03-relic_samples/multiqc/multiqc_data/multiqc_general_stats.txt"
+    poseidon_geno: "~/mount/poseidon_packages/2020-05-03-relic_samples/2020-05-03-relic_samples.geno.txt"
+    poseidon_snp: "~/mount/poseidon_packages/2020-05-03-relic_samples/2020-05-03-relic_samples.snp.txt"
+    poseidon_ind: "~/mount/poseidon_packages/2020-05-03-relic_samples/2020-05-03-relic_samples.ind.txt"
     poseidon_janno: "~/mount/forged_packages/microscope_pca/microscope_pca.janno"
-    pmmr_results_fn: "~/mount/automated_analysis/2021-09-09-potzneusiedl/pmmr/2021-09-09-potzneusiedl.pmmr.txt"
+    pmmr_results_fn: "~/mount/automated_analysis/2020-05-03-relic_samples/pmmr/2020-05-03-relic_samples.pmmr.txt"
     pca_bg_annotation: "~/Software/github/Schiffels-Popgen/MICROSCOPE-processing-pipeline/project_reports/assets/bg_annotation.txt"
     pairwise_distance_fn: "~/mount/microscope_pca/pairwise_distances.mdist"
     pairwise_distance_id: "~/mount/microscope_pca/pairwise_distances.mdist.id"
@@ -193,8 +193,8 @@ ggplot(sex_det) +
 The pairwise genotype mismatch rate (pMMR) between different individuals, can be indicative of genetic kinship. Unrelated individuals will have a higher pMMR, with multiple unrelated pairs forming a plateau on the upper-right end of the figure. The pMMR of genetically related individuals is lowered proportionally to the closeness of their relationship. Some rough expected values for pMMR based on an underlying relationship are:
 
 * Identical Twins/ Same individual: 50% of plateau value
-* First Degree : 75% of plateau value
-* Second Degree : 87.5% of plateau value
+* First Degree: 75% of plateau value
+* Second Degree: 87.5% of plateau value
 
 **It is often difficult to tell apart second from third degree relationships.** To do that, we often employ additional analytical methods once a suspected genetic relationship is identified with pMMR.
 
@@ -254,11 +254,11 @@ The following plot shows how the ancient individuals (in black) relate to presen
 
 The colour used in the plotting of present-day individuals indicates rough geographic regions, as follows:
 
-* Caucasus : \textcolor[HTML]{F8766D}{red}
-* Near East : \textcolor[HTML]{A3A500}{olive}
-* South Europe : \textcolor[HTML]{00B0F6}{light blue}
-* Central/North Europe : \textcolor[HTML]{E76BF3}{magenta}
-* Northeaster/Eastern Europe : \textcolor[HTML]{00BF7D}{green}
+* Caucasus: \textcolor[HTML]{F8766D}{red}
+* Near East: \textcolor[HTML]{A3A500}{olive}
+* South Europe: \textcolor[HTML]{00B0F6}{light blue}
+* Central/North Europe: \textcolor[HTML]{E76BF3}{magenta}
+* Northeaster/Eastern Europe: \textcolor[HTML]{00BF7D}{green}
 
 ```{r do MDS, echo=FALSE}
 components <- stats::cmdscale(dm)
@@ -288,8 +288,9 @@ ggplot()+
   scale_x_continuous(minor_breaks=seq(-2,2,0.005), breaks=seq(-2,2,0.01)) +
   scale_y_continuous(minor_breaks=seq(-2,2,0.005), breaks=seq(-2,2,0.01)) +
   theme_minimal() +
+  theme_classic(base_size=13) +
   geom_point(data=components %>% filter(bg==F), aes(x=PC1, y=PC2)) +
-  geom_text_repel(data=components %>% filter(bg==F), aes(x=PC1, y=PC2, label=Ind), max.overlaps = Inf) +
+  geom_text_repel(data=components %>% filter(bg==F), aes(x=PC1, y=PC2, label=Ind), max.overlaps = Inf, size=2.5) +
   xlab(paste0("PC1")) +
   ylab(paste0("PC2")) +
   labs(shape = "Ancient Individual")
