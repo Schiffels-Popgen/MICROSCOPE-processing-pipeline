@@ -7,7 +7,7 @@ def helpMessage() {
   =========================================
   Usage:
   The typical command for running the pipeline on sdag is as follows:
-  nextflow run automated_analysis.nf -profile eva,archgen --batch <batch_name> --outdir /mnt/archgen/MICROSCOPE/automated_analysis
+  nextflow run microscope_automated_analysis.nf -profile eva,archgen --batch <batch_name> --outdir /mnt/archgen/MICROSCOPE/automated_analysis
   Mandatory arguments:
       -profile [str]          Institution or personal hardware config to use (e.g. standard, docker, singularity, conda, aws). Ask your system admin if unsure, or check documentation.
       --batch   [str]         The sequencing batch name to process.
