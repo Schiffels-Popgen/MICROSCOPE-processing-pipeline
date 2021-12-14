@@ -210,8 +210,8 @@ pmmr_data<-read_tsv(params$pmmr_results_fn) %>%
   filter(!is.na(pMismatch), pMismatch > 0, pMismatch < 1)
 
 ## Dynamic figure size based on number of points.
-fig_width=1+(0.2*nrow(pmmr_data))
-fig_height=5/8.25*fig_width
+fig_width=max(1+(0.2*nrow(pmmr_data)), 6)
+fig_height=max(5/8.25*fig_width, 5)
 ```
 
 ```{r plot pMMR, echo=FALSE, fig.height=fig_height, fig.width=fig_width, message=FALSE}
