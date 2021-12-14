@@ -66,17 +66,45 @@ process pmmrCalculator {
     """
 }
 
-// process background_pca {
-//     conda 'bioconda::plink'
-//     publishDir "${params.outdir}/assets/background_pca"
-//     memory '1GB'
-//     cpus 1
-
-//     output:
+process forge_package {
+    conda 'bioconda::poseidon-trident'
+    memory '1GB'
+    cpus 1
     
+    // No inputs means this will run each time. forge_pca_package.sh already knows not to run if not needed.
+    script:
+    """
+    ${projectDir}/plink_mds/forge_pca_package.sh
+    """
+}
 
-//     script:
-//     """
-//     plink 
-//     """
-// }
+// Create channel with microscope PCA bed/bim/fam for PCA run
+ch_for_smartpca = Channel.fromPath("/mnt/archgen/MICROSCOPE/forged_packages/microscope_pca/*.{geno,snp,ind}")
+    .toSortedList()
+    .map {
+        it ->
+            def geno=it[0]
+            def snp=it[2]
+            def ind=it[1]
+
+        [geno, snp, ind]
+        }
+
+process microscope_pca {
+    conda 'bioconda::eigensoft=7.2.1'
+    publishDir "/mnt/archgen/MICROSCOPE/automated_analysis/microscope_pca/", mode: 'copy'
+    memory '16GB'
+    cpus 4
+
+    input:
+    tuple path(geno), path(snp), path(ind) from ch_for_smartpca.dump()
+
+    output:
+    file 'West_Eurasian_pca.evec'
+    file 'West_Eurasian_pca.eval'
+
+    script:
+    """
+    ${projectDir}/plink_mds/run_smartpca.sh ${geno} ${snp} ${ind} ${projectDir}/plink_mds/west_eurasian_poplist.txt ${task.cpus}
+    """
+}
