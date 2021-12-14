@@ -20,7 +20,7 @@ if [[ $(readlink -f ${input_geno}) -nt ${output_dir}/West_Eurasian_pca.evec ]]; 
     echo -e "autoshrink: YES" >>smartpca.par
     smartpca -p smartpca.par
 else
-    echo "No changes in the 'microscope_pca' package since the distance matrix was computed."
+    echo "No changes in the 'microscope_pca' package since the PCA was computed."
     echo "Halting execution"
     exit 0
 fi
