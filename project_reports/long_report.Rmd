@@ -16,8 +16,8 @@ params:
     poseidon_janno: "~/mount/forged_packages/microscope_pca/microscope_pca.janno"
     pmmr_results_fn: "~/mount/automated_analysis/2020-05-03-relic_samples/pmmr/2020-05-03-relic_samples.pmmr.txt"
     pca_bg_annotation: "~/Software/github/Schiffels-Popgen/MICROSCOPE-processing-pipeline/project_reports/assets/bg_annotation.txt"
-    pairwise_distance_fn: "~/mount/microscope_pca/pairwise_distances.mdist"
-    pairwise_distance_id: "~/mount/microscope_pca/pairwise_distances.mdist.id"
+    evec_fn: "~/mount/automated_analysis/microscope_pca/West_Eurasian_pca.evec"
+    eval_fn: "~/mount/automated_analysis/microscope_pca/West_Eurasian_pca.eval"
     cred_file: "~/Software/github/Schiffels-Popgen/MICROSCOPE-processing-pipeline/.credentials"
     
 title: "Extended preliminary data report"
@@ -201,14 +201,23 @@ The pairwise genotype mismatch rate (pMMR) between different individuals, can be
 The colour of the points indicates the relative confidence around the pMMR. Red points are unreliable, gray points are somewhat reliable, and black points are reliable estimates of the pMMR. The numbers above each point correspond to the number of SNPs used in the calculation of the pMMR between each pair of individuals.
 
 ```{r import and plot pMMR, echo=FALSE, fig.height=5, fig.width=8.25, message=FALSE}
+red_below_x_snps=100
+black_above_x_snps=200
+
 pmmr_data<-read_tsv(params$pmmr_results_fn) %>%
-  mutate(Label=paste(Ind1,Ind2, sep="-"), colour=if_else(nSNPs < 50, "<50 SNPs", if_else(nSNPs < 100, "<100 SNPs","100+ SNPs"))) %>%
+  mutate(Label=paste(Ind1,Ind2, sep="-"), colour=if_else(nSNPs < red_below_x_snps, paste0("<",red_below_x_snps," SNPs"), if_else(nSNPs < black_above_x_snps, paste0("<",black_above_x_snps," SNPs"),paste0(black_above_x_snps,"+ SNPs")))) %>%
   ## Remove rows with p Mismatch == NA which are invdividuals with 0 overlapping SNPs. Also remove rows with pMMR=0 or 1, which are caused by comparisons of individuals with low overlapping SNPs (usually less that 10). They can swamp other results in some datasets
   filter(!is.na(pMismatch), pMismatch > 0, pMismatch < 1)
 
+## Dynamic figure size based on number of points.
+fig_width=1+(0.2*nrow(pmmr_data))
+fig_height=5/8.25*fig_width
+```
+
+```{r plot pMMR, echo=FALSE, fig.height=fig_height, fig.width=fig_width, message=FALSE}
 if (nrow(pmmr_data) > 1) {
-ggplot(pmmr_data, aes(x=fct_reorder(Label, pMismatch), y=pMismatch, col=factor(colour, levels=c("<50 SNPs","<100 SNPs","100+ SNPs")))) +
-  scale_color_manual(values=c("<50 SNPs"="red","<100 SNPs"="grey","100+ SNPs"="black")) +
+ggplot(pmmr_data, aes(x=fct_reorder(Label, pMismatch), y=pMismatch, col=factor(colour, levels=c(paste0("<",red_below_x_snps," SNPs"),paste0("<",black_above_x_snps," SNPs"),paste0(black_above_x_snps,"+ SNPs"))))) +
+  scale_color_manual(values=stats::setNames(c("red","grey","black"), c(paste0("<",red_below_x_snps," SNPs"),paste0("<",black_above_x_snps," SNPs"), paste0(black_above_x_snps,"+ SNPs")))) +
   labs(color = "number of\noverlapping\nSNPs") +
   geom_point(size=2) + 
   geom_text(aes(label=nSNPs, y=pMismatch+0.05), size=1.5, angle=90) +
@@ -225,38 +234,7 @@ ggplot(pmmr_data, aes(x=fct_reorder(Label, pMismatch), y=pMismatch, col=factor(c
 
 # Principal component analysis
 
-```{r import distance matrix janno and pca annotation, include=FALSE}
-dm_inds <- readr::read_tsv(params$pairwise_distance_id, 
-                           col_types="cc", 
-                           col_names=c("Population", "Individual")
-                           )
-
-dm <- data.table::fread(file=params$pairwise_distance_fn, 
-                        sep = " ", 
-                        header=F, 
-                        na.strings=c("NaN","nan"), 
-                        strip.white=T
-                        ) %>%
-  as.matrix()
-colnames(dm) <- dm_inds$Individual
-rownames(dm) <- dm_inds$Individual
-
-janno_info <- read_janno(params$poseidon_janno, to_janno=F)
-## Exclude strange haploid modern Spanish dataset.
-exclude_inds <- janno_info %>% filter(Publication_Status == "BiaginiEJHG2019") %>% select(Individual_ID)
-
-##Load list of colours, population groupings and 3 character codes for modern pops.
-pop_labels <- read_tsv(params$pca_bg_annotation, col_names = c("pop","label","region","colour"), col_types = 'ccci')
-```
-
-```{r subset distances, include=FALSE}
-## Get the indices of used individuals with more than 15000 SNPs
-indices <- ((dm_inds$Population %in% pop_labels$pop & ! (dm_inds$Individual %in% exclude_inds$Individual_ID)) | dm_inds$Individual %in% good_cov_inds)
-## Remove sharing with unused individuals
-dm <- dm[c(indices),c(indices)]
-```
-
-The following plot shows how the ancient individuals (in black) relate to present-day West Eurasian populations. The distance between individuals roughly correlates with genetic distances. The plot only includes ancient individuals with sufficient genomic coverage (if any).
+The following plot shows how ancient individuals  with sufficient genomic coverage (in black) relate to present-day West Eurasian populations. The distance between individuals roughly correlates with genetic distances. The percent of genetic variation explained by each axis is shown in parentheses.
 
 The colour used in the plotting of present-day individuals indicates rough geographic regions, as follows:
 
@@ -266,38 +244,45 @@ The colour used in the plotting of present-day individuals indicates rough geogr
 * Central/North Europe: \textcolor[HTML]{E76BF3}{magenta}
 * Northeaster/Eastern Europe: \textcolor[HTML]{00BF7D}{green}
 
-```{r do MDS, echo=FALSE}
-components <- stats::cmdscale(dm)
-colnames(components) <- c("PC1", "PC2")
-components <- components %>% 
-  as_tibble(rownames = "Ind") %>%
-  mutate(bg=if_else(Ind %in% snp_cov$Sample, F, T)) %>%
-  left_join(., janno_info, by=c("Ind"="Individual_ID")) %>%
-  left_join(., pop_labels, by=c("Group_Name"="pop"))
+```{r plot and plot PCA, echo=FALSE, fig.height=7, fig.width=7, message=FALSE, warning=FALSE}
+pop_labels <- read_tsv(params$pca_bg_annotation, col_names = c("pop","label","region","colour"))
+pca_evec <- readr::read_fwf(params$evec_fn, 
+                          fwf_widths(
+                            c(21,11,rep(12,times=9),17),
+                              col_names=c("ind","pc1","pc2","pc3","pc4","pc5","pc6","pc7","pc8","pc9","pc10","pop")
+                            ), 
+                          skip=1, 
+                          trim_ws=T,
+                          col_select=c("ind","pc1","pc2","pop"), col_types='cddc'
+                          )
+
+bg_plot_data <- inner_join(pca_evec, pop_labels, by="pop")
+pca_samples <- pca_evec %>% filter(ind %in% good_cov_inds)
+
+pca_eval <- read_tsv(params$eval_fn, col_names = "eigenvalues")
+
 
 ## Infer PC orientation and flip if necessary
-Chuvash_ind <- components %>% filter(Ind == "Ttr-481")
-BedouinB_ind <- components %>% filter(Ind == "HGDP00636")
-if (Chuvash_ind$PC1 > BedouinB_ind$PC1) {
-  components <- components %>% mutate(PC1 = -PC1)
+Chuvash_ind <- bg_plot_data %>% filter(ind == "Ttr-481")
+BedouinB_ind <- bg_plot_data %>% filter(ind == "HGDP00636")
+if (Chuvash_ind$pc1 > BedouinB_ind$pc1) {
+  bg_plot_data <- bg_plot_data %>% mutate(pc1 = -pc1)
+  pca_samples <- pca_samples %>% mutate(pc1 = -pc1)
 }
-if (Chuvash_ind$PC2 < BedouinB_ind$PC2) {
-  components <- components %>% mutate(PC2 = -PC2)
+if (Chuvash_ind$pc2 < BedouinB_ind$pc2) {
+  bg_plot_data <- bg_plot_data %>% mutate(pc2 = -pc2)
+  pca_samples <- pca_samples %>% mutate(pc2 = -pc2)
 }
-```
 
-```{r plot MDS, echo=FALSE, fig.height=6, fig.width=7}
 ggplot()+
   coord_equal() +
-  scale_x_continuous(minor_breaks=seq(-2,2,0.005), breaks=seq(-2,2,0.01)) +
-  scale_y_continuous(minor_breaks=seq(-2,2,0.005), breaks=seq(-2,2,0.01)) +
-  theme_minimal(base_size=13) +
-  geom_text(data=components %>% filter(bg==T), aes(x=PC1, y=PC2, label=label, col=factor(colour)), 
-            alpha=0.4, size=2, show.legend=F) +
-  geom_point(data=components %>% filter(bg==F), aes(x=PC1, y=PC2)) +
-  geom_text_repel(data=components %>% filter(bg==F), aes(x=PC1, y=PC2, label=Ind), max.overlaps = Inf, size=2.5) +
-  xlab(paste0("PC1")) +
-  ylab(paste0("PC2")) +
+  geom_text(data=bg_plot_data, aes(x=pc1, y=pc2, label=label, col=factor(colour)), alpha=0.4, size=2, show.legend=F) +
+  theme_minimal() +
+  geom_point(data=pca_samples, aes(x=pc1, y=pc2)) +
+  geom_text_repel(data=pca_samples, aes(x=pc1, y=pc2, label=ind), max.overlaps = Inf, size=2.5) +
+  # geom_point(data=pca_samples, aes(x=pc1, y=pc2, shape=ind)) +
+  xlab(paste0("PC1 (",round((pca_eval$eigenvalues[1]/sum(pca_eval$eigenvalues))*100,digits=3),"%)")) +
+  ylab(paste0("PC2 (",round((pca_eval$eigenvalues[2]/sum(pca_eval$eigenvalues))*100,digits=3),"%)")) +
   labs(shape = "Ancient Individual")
-
+  
 ```
