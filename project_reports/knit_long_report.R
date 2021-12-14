@@ -51,12 +51,12 @@ parser <- add_option(parser, c("-b", "--batch_name"), type = 'character',
 parser <- add_option(parser, c("-a", "--bg_annotation_file"), type = 'character',
                     action = "store", dest = "bg_annotation_fn",
                     help = "The path to the file with the annotation info for the PCA background.")
-parser <- add_option(parser, c("-D", "--distance"), type = 'character',
-                    action = "store", dest = "pairwise_distance_fn",
-                    help = "Path of the plink pairwise distance matrix.")
-parser <- add_option(parser, c("-i", "--distance_ids"), type = 'character',
-                    action = "store", dest = "pairwise_distance_id",
-                    help = "Path of the Ids for the plink pairwise distance matrix.")
+parser <- add_option(parser, c("-E", "--evec_fn"), type = 'character',
+                    action = "store", dest = "evec_fn",
+                    help = "Path to the PCA eigenvector file.")
+parser <- add_option(parser, c("-e", "--eval_fn"), type = 'character',
+                    action = "store", dest = "eval_fn",
+                    help = "Path to the PCA eigenvalue file.")
 arguments <- parse_args(parser)
 
 opts <- arguments
@@ -85,8 +85,8 @@ render(reportTemplate,
         poseidon_janno = opts$janno_fn,
         pmmr_results_fn = opts$pmmr_fn,
         pca_bg_annotation = opts$bg_annotation_fn,
-        pairwise_distance_fn = opts$pairwise_distance_fn,
-        pairwise_distance_id = opts$pairwise_distance_id
+        eval_fn = opts$eval_fn,
+        evec_fn = opts$evec_fn
         ),
     output_file = opts$output_name,
     output_dir = dirname(opts$output_name)

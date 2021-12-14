@@ -31,7 +31,8 @@ long_report_dir="/mnt/archgen/MICROSCOPE/reports"
 base_poseidon_package_dir="/mnt/archgen/MICROSCOPE/poseidon_packages"
 base_analysis_dir="/mnt/archgen/MICROSCOPE/automated_analysis"
 bg_annotation_fn="/r1/people/thiseas_christos_lamnidis/Software/github/Schiffels-Popgen/MICROSCOPE-processing-pipeline/project_reports/assets/bg_annotation.txt"
-distace_matrix="/mnt/archgen/MICROSCOPE/microscope_pca/pairwise_distances.mdist"
+evec_fn="/mnt/archgen/MICROSCOPE/automated_analysis/microscope_pca/West_Eurasian_pca.evec"
+eval_fn="/mnt/archgen/MICROSCOPE/automated_analysis/microscope_pca/West_Eurasian_pca.eval"
 janno_fn="/mnt/archgen/MICROSCOPE/forged_packages/microscope_pca/microscope_pca.janno"
 
 
@@ -50,11 +51,11 @@ done
 # echo ${#finished_runs[@]}
 # echo ${#expected_outputs[@]}
 
-## If multiqc is newer than the long report AND the distance matrix, or the report does not exist, generate the report.
+## If multiqc is newer than the long report AND the PCA evec file, or the report does not exist, generate the report.
 for idx in ${!finished_runs[@]}; do
     batch_Id=$(echo ${finished_runs[${idx}]} | rev | cut -f 3 -d '/' | rev)
     batch_name=$(echo ${batch_Id} | rev | cut -f1 -d "-" | rev)
-    if [[ ${force_remake} == "TRUE" || (${finished_runs[${idx}]} -nt ${expected_outputs[${idx}]} && ${distace_matrix} -nt ${finished_runs[${idx}]}) ]]; then
+    if [[ ${force_remake} == "TRUE" || (${finished_runs[${idx}]} -nt ${expected_outputs[${idx}]} && ${evec_fn} -nt ${finished_runs[${idx}]}) ]]; then
         ## Infer filepaths for snp_coverage, sex det results and general stats table
         ##  When multiple snp coverage files exist (ssDNA + dsDNA) they get sorted alphabetically.
         ##  Take the last by index to prefer ssDNA when multiple files exist (Same as poseidon package creation).
@@ -84,14 +85,14 @@ for idx in ${!finished_runs[@]}; do
             --SnpFile ${snp_fn} \
             --IndFile ${ind_fn} \
             --bg_annotation_file ${bg_annotation_fn} \
-            --distance ${distace_matrix} \
-            --distance_ids ${distace_matrix}.id \
+            --evec_fn ${evec_fn} \
+            --eval_fn ${eval_fn} \
             --output_pdf_name ${expected_outputs[${idx}]}
     # exit 0 ## For Testing
-    elif [[ ${distace_matrix} -ot ${finished_runs[${idx}]} ]]; then
-        ## Error message when the pairwise distances are outdated.
-        echo "Distance matrix has not been updated since package \'${batch_Id}\' was updated."
-        echo "Consider updating the distance file, or use '-f' to force report (re)creation."
+    elif [[ ${evec_fn} -ot ${finished_runs[${idx}]} ]]; then
+        ## Error message when the PCA results are outdated.
+        echo "PCA has not been updated since package \'${batch_Id}\' was updated."
+        echo "Consider updating the PCA evec file, or use '-f' to force report (re)creation."
     else
         echo "Long report for ${batch_Id} did not need updating. Skipping this batch."
     fi
