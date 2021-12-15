@@ -46,6 +46,10 @@ library(poseidonR)
 require(RMariaDB)
 # require(admixr)
 
+options(scipen=2)
+## Minimum number of SNPs to be kept for analysis
+snp_cov_cutoff=10000
+
 ## Cutoffs for genetic sex calls and expected ranges in sexdet plot.
 #### Females
 xx_xmin <- 0.7
@@ -111,7 +115,7 @@ The table below includes the sample name, archaeological ID, genetic sex and SNP
 * F : Female
 * Unknown (usually due to low coverage.)
 
-Individuals that have too few covered SNPs (< 10,000) for population genetic analysis are shown in red.
+Individuals that have too few covered SNPs (< `r format(snp_cov_cutoff, digits = 0, big.mark = " ", decimal.mark = ",")`) for population genetic analysis are shown in red.
 
 ```{r gather snp coverage data, echo=FALSE, message=FALSE}
 ## Load and parse coverage stats
@@ -120,8 +124,8 @@ snp_cov<-read_tsv(params$snp_coverage_file, col_names=c("#Sample", "#SNPs_Covere
   arrange(Sample) ## Sort by individual ID so bad_cov gets the correct indices for highlighting in the table.
 
 
-bad_cov <- which(snp_cov$`# SNPs Covered` < 10000)
-good_cov_inds <- snp_cov$Sample[which(snp_cov$`# SNPs Covered` >= 10000)]
+bad_cov <- which(snp_cov$`# SNPs Covered` < snp_cov_cutoff)
+good_cov_inds <- snp_cov$Sample[which(snp_cov$`# SNPs Covered` >= snp_cov_cutoff)]
 
 ```
 
@@ -245,7 +249,7 @@ The colour used in the plotting of present-day individuals indicates rough geogr
 * Northeaster/Eastern Europe: \textcolor[HTML]{00BF7D}{green}
 
 ```{r plot and plot PCA, echo=FALSE, fig.height=7, fig.width=7, message=FALSE, warning=FALSE}
-pop_labels <- read_tsv(params$pca_bg_annotation, col_names = c("pop","label","region","colour"))
+pop_labels <- read_tsv(params$pca_bg_annotation, col_names = c("pop","label","region","colour"), col_types='ccci')
 pca_evec <- readr::read_fwf(params$evec_fn, 
                           fwf_widths(
                             c(21,11,rep(12,times=9),17),
@@ -259,8 +263,9 @@ pca_evec <- readr::read_fwf(params$evec_fn,
 bg_plot_data <- inner_join(pca_evec, pop_labels, by="pop")
 pca_samples <- pca_evec %>% filter(ind %in% good_cov_inds)
 
-pca_eval <- read_tsv(params$eval_fn, col_names = "eigenvalues")
+pca_eval <- read_tsv(params$eval_fn, col_names = "eigenvalues", col_types='d')
 
+pca_samples <- pca_samples %>% left_join(snp_cov, by=c("ind"="Sample")) %>% select(ind,pc1,pc2,pop, n_snps=`# SNPs Covered`)
 
 ## Infer PC orientation and flip if necessary
 Chuvash_ind <- bg_plot_data %>% filter(ind == "Ttr-481")
@@ -278,8 +283,14 @@ ggplot()+
   coord_equal() +
   geom_text(data=bg_plot_data, aes(x=pc1, y=pc2, label=label, col=factor(colour)), alpha=0.4, size=2, show.legend=F) +
   theme_minimal() +
-  geom_point(data=pca_samples, aes(x=pc1, y=pc2)) +
+  geom_point(data=pca_samples, aes(x=pc1, y=pc2, alpha=n_snps)) +
   geom_text_repel(data=pca_samples, aes(x=pc1, y=pc2, label=ind), max.overlaps = Inf, size=2.5) +
+  scale_alpha_continuous(
+    range=c(0.2,1), 
+    limits=c(snp_cov_cutoff, 80000), 
+    labels=function(x) {paste0("at least ", format(x, digits = 0, big.mark = " ", scientific = F)," SNPs")}, 
+    name="SNP Coverage"
+    ) +
   # geom_point(data=pca_samples, aes(x=pc1, y=pc2, shape=ind)) +
   xlab(paste0("PC1 (",round((pca_eval$eigenvalues[1]/sum(pca_eval$eigenvalues))*100,digits=3),"%)")) +
   ylab(paste0("PC2 (",round((pca_eval$eigenvalues[2]/sum(pca_eval$eigenvalues))*100,digits=3),"%)")) +
