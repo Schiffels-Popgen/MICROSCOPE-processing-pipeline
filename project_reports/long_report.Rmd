@@ -202,7 +202,7 @@ The pairwise genotype mismatch rate (pMMR) between different individuals, can be
 
 **It is often difficult to tell apart second from third degree relationships.** To do that, we often employ additional analytical methods once a suspected genetic relationship is identified with pMMR.
 
-The colour of the points indicates the relative confidence around the pMMR. Red points are unreliable, gray points are somewhat reliable, and black points are reliable estimates of the pMMR. The numbers above each point correspond to the number of SNPs used in the calculation of the pMMR between each pair of individuals.
+The colour of the points indicates the relative confidence around the pMMR. Gray points are less reliable, and black points are reliable estimates of the pMMR. The numbers above each point correspond to the number of SNPs used in the calculation of the pMMR between each pair of individuals. The higher this number is the more reliable the estimate.
 
 ```{r import and plot pMMR, echo=FALSE, fig.height=5, fig.width=8.25, message=FALSE}
 red_below_x_snps=100
@@ -213,6 +213,11 @@ pmmr_data<-read_tsv(params$pmmr_results_fn) %>%
   ## Remove rows with p Mismatch == NA which are invdividuals with 0 overlapping SNPs. Also remove rows with pMMR=0 or 1, which are caused by comparisons of individuals with low overlapping SNPs (usually less that 10). They can swamp other results in some datasets
   filter(!is.na(pMismatch), pMismatch > 0, pMismatch < 1)
 
+## Calculate median
+median_pmmr <- median(pmmr_data$pMismatch)
+## Filter out lowest coverage results. 
+pmmr_data %>% filter(nSNPs > red_below_x_snps)
+
 ## Dynamic figure size based on number of points.
 fig_width=max(1+(0.2*nrow(pmmr_data)), 6)
 fig_height=max(5/8.25*fig_width, 5)
@@ -221,15 +226,18 @@ fig_height=max(5/8.25*fig_width, 5)
 ```{r plot pMMR, echo=FALSE, fig.height=fig_height, fig.width=fig_width, message=FALSE}
 if (nrow(pmmr_data) > 1) {
 ggplot(pmmr_data, aes(x=fct_reorder(Label, pMismatch), y=pMismatch, col=factor(colour, levels=c(paste0("<",red_below_x_snps," SNPs"),paste0("<",black_above_x_snps," SNPs"),paste0(black_above_x_snps,"+ SNPs"))))) +
-  scale_color_manual(values=stats::setNames(c("red","grey","black"), c(paste0("<",red_below_x_snps," SNPs"),paste0("<",black_above_x_snps," SNPs"), paste0(black_above_x_snps,"+ SNPs")))) +
+  scale_color_manual(values=stats::setNames(c("grey","black"), c(paste0("<",black_above_x_snps," SNPs"), paste0(black_above_x_snps,"+ SNPs")))) +
   labs(color = "number of\noverlapping\nSNPs") +
+  geom_hline(yintercept = median_pmmr, colour="gray70", lty=3) +
+    geom_text(label="median", x=nrow(pmmr_data), y=median_pmmr, show.legend=F, size=2.5, nudge_y=0.1) +
   geom_point(size=2) + 
-  geom_text(aes(label=nSNPs, y=pMismatch+0.05), size=1.5, angle=90) +
+  geom_text(aes(label=nSNPs, y=pMismatch), size=1.5, angle=90, nudge_y=0.05) +
   theme_classic(base_size=13) + 
   theme(axis.text.x = element_text(angle=90, hjust=1, vjust=0.5), legend.title.align = 0.5) +
   expand_limits(x = 0, y = 0) +
   xlab('') +
-  ylab("pairwise genotype mismatch rate")
+  ylab("pairwise genotype mismatch rate") +
+    coord_cartesian(clip = "off")
 } else {
   print("Pairwise mismatch rate cannot be calculated for a single individual.")
 }
