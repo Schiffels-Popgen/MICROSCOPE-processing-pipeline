@@ -4,7 +4,7 @@
 mkdir -p /mnt/archgen/MICROSCOPE/poseidon_packages
 update_switch="off" ## Do any packages need updating? Then update al janno files with information from pandora.
 ## Colours to make prompts easier to read
-Yellow=$(tput sgr0)'\033[1;33m'
+Yellow=$(tput sgr0)'\033[1;33m' ## Yellow normal face
 Normal=$(tput sgr0)
 
 for seq_batch in $(find /mnt/archgen/MICROSCOPE/eager_outputs/* -maxdepth 0 ! -path "*2021-01-27-Prague_bams"); do
@@ -12,7 +12,7 @@ for seq_batch in $(find /mnt/archgen/MICROSCOPE/eager_outputs/* -maxdepth 0 ! -p
     ## Prefer single stranded to double stranded library data for genotypes.
     if [[ ${seq_batch}/genotyping/pileupcaller.single.geno.txt -nt /mnt/archgen/MICROSCOPE/poseidon_packages/${batch_name}/POSEIDON.yml ]]; then
         update_switch="on"
-        echo "${Yellow}SSLib found for ${batch_name}${Normal}"
+        echo -e "${Yellow}SSLib found for ${batch_name}${Normal}"
         ## If the directory already exists, delete it so trident doesn't complain
         if [[ -d "poseidon_packages/${batch_name}" ]]; then
             echo "Deleting existing directory poseidon_packages/${batch_name} to recreate package with new genotypes."
@@ -42,7 +42,7 @@ for seq_batch in $(find /mnt/archgen/MICROSCOPE/eager_outputs/* -maxdepth 0 ! -p
     ## If no single stranded genotypes exist, use double stranded library data for genotypes instead.
     elif [[ ${seq_batch}/genotyping/pileupcaller.double.geno.txt -nt /mnt/archgen/MICROSCOPE/poseidon_packages/${batch_name}/POSEIDON.yml ]]; then
         update_switch="on"
-        echo "${Yellow}DSLib found for ${batch_name}${Normal}"
+        echo -e "${Yellow}DSLib found for ${batch_name}${Normal}"
         ## If the directory already exists, delete it so trident doesn't complain
         if [[ -d "poseidon_packages/${batch_name}" ]]; then
             echo "Deleting existing directory poseidon_packages/${batch_name} to recreate package with new genotypes."
@@ -72,7 +72,7 @@ for seq_batch in $(find /mnt/archgen/MICROSCOPE/eager_outputs/* -maxdepth 0 ! -p
 done
 
 if [[ ${update_switch} == "on" ]]; then
-    echo "${Yellow}Querying pandora for site information${Normal}"
+    echo -e "${Yellow}Querying pandora for site information${Normal}"
     ## Gather all site ids
     cat /mnt/archgen/MICROSCOPE/poseidon_packages/*/*ind | cut -c1-3 >/mnt/archgen/MICROSCOPE/poseidon_packages/Sites.txt
 
@@ -86,7 +86,7 @@ if [[ ${update_switch} == "on" ]]; then
         mv ${ind_f}.2 ${ind_f}
     done
 
-    echo "${Yellow}Updating package metadata${Normal}"
+    echo -e "${Yellow}Updating package metadata${Normal}"
     ## Add Site_ID and Site_Name to .janno
     for janno_f in /mnt/archgen/MICROSCOPE/poseidon_packages/*/*.janno; do
         temp_janno="$(dirname ${janno_f})/temp_janno"
