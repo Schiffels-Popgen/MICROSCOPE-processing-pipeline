@@ -3,13 +3,16 @@
 
 mkdir -p /mnt/archgen/MICROSCOPE/poseidon_packages
 update_switch="off" ## Do any packages need updating? Then update al janno files with information from pandora.
+## Colours to make prompts easier to read
+Yellow=$(tput sgr0)'\033[1;33m'
+Normal=$(tput sgr0)
 
 for seq_batch in $(find /mnt/archgen/MICROSCOPE/eager_outputs/* -maxdepth 0 ! -path "*2021-01-27-Prague_bams"); do
     batch_name=$(basename ${seq_batch})
     ## Prefer single stranded to double stranded library data for genotypes.
     if [[ ${seq_batch}/genotyping/pileupcaller.single.geno.txt -nt /mnt/archgen/MICROSCOPE/poseidon_packages/${batch_name}/POSEIDON.yml ]]; then
         update_switch="on"
-        echo "SSLib found for ${batch_name}"
+        echo "${Yellow}SSLib found for ${batch_name}${Normal}"
         ## If the directory already exists, delete it so trident doesn't complain
         if [[ -d "poseidon_packages/${batch_name}" ]]; then
             echo "Deleting existing directory poseidon_packages/${batch_name} to recreate package with new genotypes."
@@ -32,11 +35,14 @@ for seq_batch in $(find /mnt/archgen/MICROSCOPE/eager_outputs/* -maxdepth 0 ! -p
         sed -i -e 's/.txt$//' /mnt/archgen/MICROSCOPE/poseidon_packages/${batch_name}/POSEIDON.yml
         rename -e 's/.txt$//' /mnt/archgen/MICROSCOPE/poseidon_packages/${batch_name}/${batch_name}*txt
 
+        ## Also make plink format dataset (needed for READ)
+        trident genoconvert -d /mnt/archgen/MICROSCOPE/poseidon_packages/${batch_name} --outFormat PLINK
+
 
     ## If no single stranded genotypes exist, use double stranded library data for genotypes instead.
     elif [[ ${seq_batch}/genotyping/pileupcaller.double.geno.txt -nt /mnt/archgen/MICROSCOPE/poseidon_packages/${batch_name}/POSEIDON.yml ]]; then
         update_switch="on"
-        echo "DSLib found for ${batch_name}"
+        echo "${Yellow}DSLib found for ${batch_name}${Normal}"
         ## If the directory already exists, delete it so trident doesn't complain
         if [[ -d "poseidon_packages/${batch_name}" ]]; then
             echo "Deleting existing directory poseidon_packages/${batch_name} to recreate package with new genotypes."
@@ -59,11 +65,14 @@ for seq_batch in $(find /mnt/archgen/MICROSCOPE/eager_outputs/* -maxdepth 0 ! -p
         sed -i -e 's/.txt$//' /mnt/archgen/MICROSCOPE/poseidon_packages/${batch_name}/POSEIDON.yml
         rename -e 's/.txt$//' /mnt/archgen/MICROSCOPE/poseidon_packages/${batch_name}/${batch_name}*txt
 
+        ## Also make plink format dataset (needed for READ)
+        trident genoconvert -d /mnt/archgen/MICROSCOPE/poseidon_packages/${batch_name} --outFormat PLINK
+
     fi
 done
 
 if [[ ${update_switch} == "on" ]]; then
-    echo "Querying pandora for site information"
+    echo "${Yellow}Querying pandora for site information${Normal}"
     ## Gather all site ids
     cat /mnt/archgen/MICROSCOPE/poseidon_packages/*/*ind | cut -c1-3 >/mnt/archgen/MICROSCOPE/poseidon_packages/Sites.txt
 
@@ -77,7 +86,7 @@ if [[ ${update_switch} == "on" ]]; then
         mv ${ind_f}.2 ${ind_f}
     done
 
-    echo "Updating package metadata"
+    echo "${Yellow}Updating package metadata${Normal}"
     ## Add Site_ID and Site_Name to .janno
     for janno_f in /mnt/archgen/MICROSCOPE/poseidon_packages/*/*.janno; do
         temp_janno="$(dirname ${janno_f})/temp_janno"
