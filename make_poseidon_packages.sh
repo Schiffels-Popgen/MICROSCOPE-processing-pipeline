@@ -1,5 +1,14 @@
 #!/usr/bin/env bash
 
+## Read in -f positional argument
+force='FALSE'
+force_update_switch='FALSE'
+if [[ $1 == "-f" ]]; then
+    force="TRUE"
+fi
+if [[ $1 == "-u" ]]; then
+    force_update_switch="TRUE"
+fi
 
 mkdir -p /mnt/archgen/MICROSCOPE/poseidon_packages
 update_switch="off" ## Do any packages need updating? Then update al janno files with information from pandora.
@@ -10,7 +19,7 @@ Normal=$(tput sgr0)
 for seq_batch in $(find /mnt/archgen/MICROSCOPE/eager_outputs/* -maxdepth 0 ! -path "*2021-01-27-Prague_bams"); do
     batch_name=$(basename ${seq_batch})
     ## Prefer single stranded to double stranded library data for genotypes.
-    if [[ ${seq_batch}/genotyping/pileupcaller.single.geno.txt -nt /mnt/archgen/MICROSCOPE/poseidon_packages/${batch_name}/POSEIDON.yml ]]; then
+    if [[ (${force} == "TRUE" && -f ${seq_batch}/genotyping/pileupcaller.single.geno.txt) || (${seq_batch}/genotyping/pileupcaller.single.geno.txt -nt /mnt/archgen/MICROSCOPE/poseidon_packages/${batch_name}/POSEIDON.yml) ]]; then
         update_switch="on"
         echo -e "${Yellow}SSLib found for ${batch_name}${Normal}"
         ## If the directory already exists, delete it so trident doesn't complain
@@ -40,7 +49,7 @@ for seq_batch in $(find /mnt/archgen/MICROSCOPE/eager_outputs/* -maxdepth 0 ! -p
 
 
     ## If no single stranded genotypes exist, use double stranded library data for genotypes instead.
-    elif [[ ${seq_batch}/genotyping/pileupcaller.double.geno.txt -nt /mnt/archgen/MICROSCOPE/poseidon_packages/${batch_name}/POSEIDON.yml ]]; then
+    elif [[ (${force} == "TRUE" && -f ${seq_batch}/genotyping/pileupcaller.double.geno.txt) || (${seq_batch}/genotyping/pileupcaller.double.geno.txt -nt /mnt/archgen/MICROSCOPE/poseidon_packages/${batch_name}/POSEIDON.yml) ]]; then
         update_switch="on"
         echo -e "${Yellow}DSLib found for ${batch_name}${Normal}"
         ## If the directory already exists, delete it so trident doesn't complain
@@ -71,7 +80,7 @@ for seq_batch in $(find /mnt/archgen/MICROSCOPE/eager_outputs/* -maxdepth 0 ! -p
     fi
 done
 
-if [[ ${update_switch} == "on" ]]; then
+if [[ ${force_update_switch} == "TRUE" || ${update_switch} == "on" ]]; then
     echo -e "${Yellow}Querying pandora for site information${Normal}"
     ## Gather all site ids
     cat /mnt/archgen/MICROSCOPE/poseidon_packages/*/*ind | cut -c1-3 >/mnt/archgen/MICROSCOPE/poseidon_packages/Sites.txt
