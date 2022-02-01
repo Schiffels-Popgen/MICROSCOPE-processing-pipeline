@@ -72,6 +72,11 @@ process forge_package {
     cpus 1
     
     // No inputs means this will run each time. forge_pca_package.sh already knows not to run if not needed.
+    
+    // Dummy output to run this before attempting to run smartpca, which fails the job.
+    output:
+    val "dummy" into ch_dummy_for_pca_dependency
+
     script:
     """
     ${projectDir}/plink_mds/forge_pca_package.sh
@@ -98,6 +103,7 @@ process microscope_pca {
 
     input:
     tuple path(geno), path(snp), path(ind) from ch_for_smartpca.dump()
+    val dummy from ch_dummy_for_pca_dependency
 
     output:
     file 'West_Eurasian_pca.evec'
@@ -106,5 +112,50 @@ process microscope_pca {
     script:
     """
     ${projectDir}/plink_mds/run_smartpca.sh ${geno} ${snp} ${ind} ${projectDir}/plink_mds/west_eurasian_poplist.txt ${task.cpus}
+    """
+}
+
+Channel.fromPath("/mnt/archgen/MICROSCOPE/poseidon_packages/${params.batch}/*.{bed,bim,fam}")
+    .toSortedList()
+    .map {
+        it -> 
+            def bed=it[0]
+            def bim=it[2]
+            def fam=it[1]
+        
+        [bed, bim, fam]
+        }
+    .into { ch_input_for_read; ch_input_dummy }
+
+process kinship_read {
+    validExitStatus 0,11 // exit status of 11 given when no samples have sufficient coverage
+    conda 'conda-forge::python=2.7.15 conda-forge::r-base=4.0.3 bioconda::plink=1.90b6.21'
+    tag "${params.batch}"
+    publishDir "${params.outdir}/${params.batch}/read", mode: 'copy'
+    memory '1GB'
+    cpus 1
+
+    input:
+    tuple path(bed), path(bim), path(fam) from ch_input_for_read.dump()
+
+    output:
+    file "${params.batch}.read.txt"
+    file "${params.batch}.read.plot.pdf"
+
+    script:
+    """
+    ## Filter out non-autosomal genotypes, and samples with missingness below 1.5% (about 18k SNPs)
+    plink --bfile ${bed.baseName} --make-bed --out ${bed.baseName}.autosomes --autosome --mind 0.985
+
+    ## Create map file from bim
+    ## cut -f 1-4 ${bim.baseName}.autosomes.bim >${bed.baseName}.autosomes.recoded .map
+
+    ## Transpose the plink data
+    plink --bfile ${bed.baseName}.autosomes --out ${bed.baseName}.autosomes.recoded --recode  --transpose 
+
+    python /r1/people/thiseas_christos_lamnidis/Software/bitbucket/tguenther/read/READ.py ${bed.baseName}.autosomes.recoded
+
+    mv READ_results ${params.batch}.read.txt
+    mv READ_results_plot.pdf ${params.batch}.read.plot.pdf
     """
 }
