@@ -1,9 +1,11 @@
 #!/usr/bin/env bash
 
 # eager_version='2.2.1' #7971d89e54
-eager_version='2.3.5' ## Changed on 05/07/2021
+# eager_version='2.3.5' ## Changed on 05/07/2021
+eager_version='2.4.2' ## Changed 01/02/2022. Fixes resource requirement of bedtools coverage.
 
 microscope_config='/mnt/archgen/MICROSCOPE/MICROSCOPE.config'
+barcode_info_fn='/mnt/archgen/MICROSCOPE/batches_with_adapters.tsv'
 
 ## Set profiles based on cluster.
 if [[ $(hostname) =~ ^mpi- ]]; then
@@ -19,10 +21,16 @@ Red='\033[1;31m'$(tput bold) ## Red bold face
 Yellow=$(tput sgr0)'\033[1;33m' ## Yellow normal face
 
 for eager_input in /mnt/archgen/MICROSCOPE/eager_inputs/*.eager_input.tsv; do
+    batch_name=$(basename ${eager_input} .eager_input.tsv)
     ## Set output directory name from eager input name
-    eager_output_dir="/mnt/archgen/MICROSCOPE/eager_outputs/$(basename ${eager_input} .eager_input.tsv)"
+    eager_output_dir="/mnt/archgen/MICROSCOPE/eager_outputs/${batch_name}"
     ## Run name is batch name with dashes replaced with underscores
     # run_name=$(basename ${eager_output_dir//-/_}) ## Eager only allows run names with 1 underscore which makes giving informative run names difficult.
+
+    ## Check if batch has barcodes and their lengths.
+    ##    barcode_rem will be the trim parameter calls for eager if needed, else ''.
+    barcode_rem=$( (grep ${batch_name} ${barcode_info_fn} | awk '{print "--post_ar_trim_front",$2,"--post_ar_trim_tail",$3}') || echo '' )
+
     ## If the eager input is newer than the output directory or the output directory doesnt exist, then eager is run on the input
     if [[ ${eager_input} -nt ${eager_output_dir} ]]; then
         # echo "${eager_input}:    Input is newer"
@@ -35,7 +43,7 @@ for eager_input in /mnt/archgen/MICROSCOPE/eager_inputs/*.eager_input.tsv; do
             --email ${USER}@eva.mpg.de \
             --outdir ${eager_output_dir} \
             -w ${eager_output_dir}/work \
-            -with-tower -ansi-log false"
+            ${barcode_rem} -with-tower -ansi-log false"
 
         touch -c ${eager_output_dir} ## Refresh the creation date of the output directory to reflect the start of the new run, but do not create a file if it doesnt exist.
             
@@ -47,7 +55,7 @@ for eager_input in /mnt/archgen/MICROSCOPE/eager_inputs/*.eager_input.tsv; do
                 --email ${USER}@eva.mpg.de \
                 --outdir ${eager_output_dir} \
                 -w ${eager_output_dir}/work \
-                -with-tower -ansi-log false
+                ${barcode_rem} -with-tower -ansi-log false
             
     ## If the MultiQC report is older than the directory, or doesnt exist yet, try to resume execution. Helpful for runs that failed.
     elif [[ ${eager_output_dir} -nt ${eager_output_dir}/multiqc/multiqc_report.html ]]; then
@@ -75,7 +83,7 @@ for eager_input in /mnt/archgen/MICROSCOPE/eager_inputs/*.eager_input.tsv; do
                 --email ${USER}@eva.mpg.de \
                 --outdir ${eager_output_dir} \
                 -w ${eager_output_dir}/work \
-                -with-tower -ansi-log false \
+                ${barcode_rem} -with-tower -ansi-log false \
                 -resume"
             
             nextflow run nf-core/eager \
@@ -86,7 +94,7 @@ for eager_input in /mnt/archgen/MICROSCOPE/eager_inputs/*.eager_input.tsv; do
                 --email ${USER}@eva.mpg.de \
                 --outdir ${eager_output_dir} \
                 -w ${eager_output_dir}/work \
-                -with-tower -ansi-log false \
+                ${barcode_rem} -with-tower -ansi-log false \
                 -resume
         else
             echo "OK! ${eager_input} was skipped"
