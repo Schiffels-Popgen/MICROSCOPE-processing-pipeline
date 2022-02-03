@@ -132,6 +132,7 @@ good_cov_inds <- snp_cov$Sample[which(snp_cov$`# SNPs Covered` >= snp_cov_cutoff
 ```{r gather sexdet data, message=FALSE, include=FALSE}
 ## Load and parse sex determination stats.
 sex_det <- read_tsv(params$sex_det_file, col_names=c("#Sample", "#SnpsAut", "#SNPsX", "#SnpsY", "NrAut", "NrX", "NrY", "x-rate", "y-rate"), col_types='ciiiiiidd', skip=1) %>%
+  filter(!grepl("doublestrand", `#Sample`)) %>% ## When both ssDNA and dsDNA libraries exist, only keep single stranded libs.
   separate(`#Sample`, into=c("Sample"), sep="[._]", extra='drop') %>%
   select(`Sample`, `x-rate`, `y-rate`) %>%
   infer_sex(sex_cutoffs=sex_cutoffs)
