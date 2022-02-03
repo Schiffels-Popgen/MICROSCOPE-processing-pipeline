@@ -90,6 +90,20 @@ infer_sex <- function(sex_det, sex_cutoffs){
 
 # Descriptive statistics of sequencing data
 
+The table below contains some descriptive statistics on the sequencing data. The meaning of each of these statistics is as follows:
+
+* **Sequenced Reads**: The total number of DNA fragments that were sequenced.
+* **Mapped Reads**: The number of human DNA fragments.
+* **Endogenous DNA (%)**: The percent of the 'Sequenced Reads' that are identified as human DNA.
+* **% of Sequence Duplication**: The percent of 'Mapped Reads' that are laboratory duplicates of other DNA fragments
+* **Damage 1st bp 5'**: The proportion of DNA fragments that show evidence of DNA damage on the 1st base pair (bp) of the 5' end of the DNA molecule.
+
+The proportion of Endogenous DNA is a measure of human DNA preservation.
+
+A high percent of sequence duplication indicates that we have sequenced most of the unique DNA fragments in the DNA library, meaning that any further sequencing would provide diminishing returns.
+
+The presence of DNA damage helps confirm that the DNA in a sequenced library is in fact ancient. Libraries with low proportion of DNA damage (Damage 1st bp 5\') and high endogenous DNA are potentially contaminated with present-day DNA molecules.
+
 ```{r load_general_stats, echo=FALSE, message=FALSE}
 library_info <- read_tsv(params$stats_table) %>%
   filter(!grepl("_S0_",Sample)) %>% 
@@ -99,7 +113,7 @@ library_info <- read_tsv(params$stats_table) %>%
     "Mapped Reads" = `Samtools Flagstat (pre-samtools filter)_mqc-generalstats-samtools_flagstat_pre_samtools_filter-mapped_passed`,
     "Endogenous DNA (%)"= `endorSpy_mqc-generalstats-endorspy-endogenous_dna`,
     "% of Sequence Duplication" = `Picard_mqc-generalstats-picard-PERCENT_DUPLICATION`,
-    "Damage 1st bp 3'" = `DamageProfiler_mqc-generalstats-damageprofiler-3_Prime1`
+    "Damage 1st bp 5'" = `DamageProfiler_mqc-generalstats-damageprofiler-5_Prime1`
          ) %>%
   mutate(`% of Sequence Duplication`=`% of Sequence Duplication`*100) %>%
   arrange(Sample)
@@ -111,9 +125,9 @@ library_info %>% kable(longtable = TRUE, format.args=list(big.mark = ',', digits
 
 The table below includes the sample name, archaeological ID, genetic sex and SNP coverage of each individual. Genetic Sex is abbreviated as follows:
 
-* M : Male
-* F : Female
-* Unknown (usually due to low coverage.)
+* **M** : Male
+* **F** : Female
+* **Unknown** (usually due to low coverage.)
 
 Individuals that have too few covered SNPs (< `r format(snp_cov_cutoff, digits = 0, big.mark = " ", decimal.mark = ",")`) for population genetic analysis are shown in red.
 
@@ -195,17 +209,8 @@ ggplot(sex_det) +
 \newpage
 
 # Pairwise mismatch rate between individuals
-The pairwise genotype mismatch rate (pMMR) between different individuals, can be indicative of genetic kinship. Unrelated individuals will have a higher pMMR, with multiple unrelated pairs forming a plateau on the upper-right end of the figure. The pMMR of genetically related individuals is lowered proportionally to the closeness of their relationship. Some rough expected values for pMMR based on an underlying relationship are:
 
-* Identical Twins/ Same individual: 50% of plateau value
-* First Degree: 75% of plateau value
-* Second Degree: 87.5% of plateau value
-
-**It is often difficult to tell apart second from third degree relationships.** To do that, we often employ additional analytical methods once a suspected genetic relationship is identified with pMMR.
-
-The colour of the points indicates the relative confidence around the pMMR. Gray points are less reliable, and black points are reliable estimates of the pMMR. The numbers above each point correspond to the number of SNPs used in the calculation of the pMMR between each pair of individuals. The higher this number is the more reliable the estimate.
-
-```{r import and plot pMMR, echo=FALSE, fig.height=5, fig.width=8.25, message=FALSE}
+```{r import pMMR, echo=FALSE, fig.height=5, fig.width=8.25, message=FALSE}
 red_below_x_snps=100
 black_above_x_snps=200
 
@@ -222,10 +227,26 @@ pmmr_data <- pmmr_data %>% filter(nSNPs > red_below_x_snps)
 ## Dynamic figure size based on number of points.
 fig_width=max(1+(0.2*nrow(pmmr_data)), 6)
 fig_height=max(5/8.25*fig_width, 5)
+show_pmmr <- nrow(pmmr_data) > 1
 ```
+\newif\ifpmmr
+\pmmr`r ifelse(show_pmmr, 'true', 'false')`
+\ifpmmr
+The pairwise genotype mismatch rate (pMMR) between different individuals, can be indicative of genetic kinship. Unrelated individuals will have a higher pMMR, with multiple unrelated pairs forming a plateau around the median pMMR value. The pMMR of genetically related individuals is lowered proportionally to the closeness of their relationship. Some rough expected values for pMMR based on an underlying relationship are:
 
-```{r plot pMMR, echo=FALSE, fig.height=fig_height, fig.width=fig_width, message=FALSE}
-if (nrow(pmmr_data) > 1) {
+* **Identical Twins/ Same individual**: 50% of median value
+* **First Degree**: 75% of median value
+* **Second Degree**: 87.5% of median value
+
+**It is often difficult to tell apart second from third degree relationships.** To do that, we often employ additional analytical methods once a suspected genetic relationship is identified with pMMR.
+
+The colour of the points indicates the relative confidence around the pMMR. Gray points are less reliable, and black points are reliable estimates of the pMMR. The numbers above each point correspond to the number of SNPs used in the calculation of the pMMR between each pair of individuals. The higher this number is the more reliable the estimate.
+
+\else
+Not enough individuals with high enough SNP coverage to calculate pMMR (requires a minimum of 2 individuals each with a minimum of `r format(snp_cov_cutoff, digits = 0, big.mark = " ", decimal.mark = ",")` SNPs). pMMR results will be added here if/when additional sequencing data becomes available.
+\fi
+
+```{r plot pMMR, echo=FALSE, fig.height=fig_height, fig.width=fig_width, message=FALSE, eval=nrow(pmmr_data) > 1}
 ggplot(pmmr_data, aes(x=fct_reorder(Label, pMismatch), y=pMismatch, col=factor(colour, levels=c(paste0("<",black_above_x_snps," SNPs"),paste0(black_above_x_snps,"+ SNPs"))))) +
   scale_color_manual(values=stats::setNames(c("grey","black"), c(paste0("<",black_above_x_snps," SNPs"), paste0(black_above_x_snps,"+ SNPs")))) +
   labs(color = "number of\noverlapping\nSNPs") +
@@ -238,26 +259,12 @@ ggplot(pmmr_data, aes(x=fct_reorder(Label, pMismatch), y=pMismatch, col=factor(c
   expand_limits(x = 0, y = 0) +
   xlab('') +
   ylab("pairwise genotype mismatch rate") +
-    coord_cartesian(clip = "off")
-} else {
-  print("Pairwise mismatch rate cannot be calculated for a single individual.")
-}
+  coord_cartesian(clip = "off")
 ```
 \newpage
 
 # Principal component analysis
-
-The following plot shows how ancient individuals  with sufficient genomic coverage (in black) relate to present-day West Eurasian populations. The distance between individuals roughly correlates with genetic distances. The percent of genetic variation explained by each axis is shown in parentheses.
-
-The colour used in the plotting of present-day individuals indicates rough geographic regions, as follows:
-
-* Caucasus: \textcolor[HTML]{F8766D}{red}
-* Near East: \textcolor[HTML]{A3A500}{olive}
-* South Europe: \textcolor[HTML]{00B0F6}{light blue}
-* Central/North Europe: \textcolor[HTML]{E76BF3}{magenta}
-* Northeaster/Eastern Europe: \textcolor[HTML]{00BF7D}{green}
-
-```{r plot and plot PCA, echo=FALSE, fig.height=7, fig.width=7, message=FALSE, warning=FALSE}
+```{r import PCA data, echo=FALSE, message=FALSE, warning=FALSE}
 pop_labels <- read_tsv(params$pca_bg_annotation, col_names = c("pop","label","region","colour"), col_types='ccci')
 pca_evec <- readr::read_fwf(params$evec_fn, 
                           fwf_widths(
@@ -287,7 +294,28 @@ if (Chuvash_ind$pc2 < BedouinB_ind$pc2) {
   bg_plot_data <- bg_plot_data %>% mutate(pc2 = -pc2)
   pca_samples <- pca_samples %>% mutate(pc2 = -pc2)
 }
+show_pca <- nrow(pca_samples) > 0
+```
+\newif\ifpca
+\pca`r ifelse(show_pca, 'true', 'false')`
+\ifpca
+The following plot shows how ancient individuals  with sufficient genomic coverage (in black) relate to present-day West Eurasian populations. The distance between individuals roughly correlates with genetic distances. The percent of genetic variation explained by each axis is shown in parentheses.
 
+The colour used in the plotting of present-day individuals indicates rough geographic regions, as follows:
+
+* **Caucasus**: \textcolor[HTML]{F8766D}{red}
+* **Near East**: \textcolor[HTML]{A3A500}{olive}
+* **South Europe**: \textcolor[HTML]{00B0F6}{light blue}
+* **Central/North Europe**: \textcolor[HTML]{E76BF3}{magenta}
+* **Northeaster/Eastern Europe**: \textcolor[HTML]{00BF7D}{green}
+
+\else
+No individuals pass the SNP coverage cutoff for this analysis (`r format(snp_cov_cutoff, digits = 0, big.mark = " ", decimal.mark = ",")` SNPs). A PCA for this data will be added here if/when additional sequencing data becomes available.
+\fi
+
+
+
+```{r plot pca, echo=FALSE, fig.height=7, fig.width=7, message=FALSE, warning=FALSE, eval=nrow(pca_samples)>0}
 ggplot()+
   coord_equal() +
   geom_text(data=bg_plot_data, aes(x=pc1, y=pc2, label=label, col=factor(colour)), alpha=0.4, size=2, show.legend=F) +
