@@ -177,7 +177,7 @@ ggplot(sex_det) +
   geom_errorbar(aes(x=x, ymin=ymin, ymax=ymax, alpha=`Total Snps`), width=0) +
   geom_errorbarh(aes(y=y, xmin=xmin, xmax=xmax, alpha=`Total Snps`), height=0) +
   geom_text_repel(aes(label=Sample, x=x, y=y), max.overlaps = 50, size=2) +
-  scale_alpha(range=c(0.3,1), labels=function(x) {format(x, big.mark = ",", decimal.mark = ".", scientific = F)}) +
+  scale_alpha(range=c(0.4,1), labels=function(x) {format(x, big.mark = ",", decimal.mark = ".", scientific = F)}) +
   theme_classic() +
   theme(legend.position = 'bottom', 
         legend.direction="horizontal", 
