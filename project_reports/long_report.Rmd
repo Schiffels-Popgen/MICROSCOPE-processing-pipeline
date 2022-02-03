@@ -23,7 +23,7 @@ params:
 title: "Extended preliminary data report"
 subtitle: "`r params$set_subtitle`"
 ---
-
+\newpage
 ```{r load_libraries, message=FALSE, warning=FALSE, include=FALSE}
 ## Load required packages
 library(dplyr)
@@ -103,7 +103,7 @@ library_info <- read_tsv(params$stats_table) %>%
          ) %>%
   mutate(`% of Sequence Duplication`=`% of Sequence Duplication`*100) %>%
   arrange(Sample)
-library_info %>% kable(format.args=list(big.mark = ',', digits=3))  %>% kable_styling(full_width=T)
+library_info %>% kable(longtable = TRUE, format.args=list(big.mark = ',', digits=3))  %>% kable_styling(full_width=T, latex_options=c("hold_position", "repeat_header"))
 ```
 \newpage
 
@@ -152,7 +152,7 @@ sex_det_pandora <- full_join(sex_det, pandora_data, by="Sample")
 snp_cov_sex_pandora <- full_join(snp_cov, sex_det_pandora, by="Sample") %>% select(`Sample`, `Archaeological ID`, `Genetic Sex`, `# SNPs Covered`, `Out of a maximum of`) %>%
   arrange(Sample)
 
-snp_cov_sex_pandora %>% kable(format.args=list(big.mark = ',')) %>% kable_styling(latex_options = "hold_position") %>%
+snp_cov_sex_pandora %>% kable(longtable = TRUE, format.args=list(big.mark = ',')) %>% kable_styling(latex_options = c("hold_position", "repeat_header")) %>%
   row_spec(bad_cov, bold = F, color = "red")
 ```
 **These results are liable to change with any addition of further sequencing data.**
@@ -177,7 +177,7 @@ ggplot(sex_det) +
   geom_errorbar(aes(x=x, ymin=ymin, ymax=ymax, alpha=`Total Snps`), width=0) +
   geom_errorbarh(aes(y=y, xmin=xmin, xmax=xmax, alpha=`Total Snps`), height=0) +
   geom_text_repel(aes(label=Sample, x=x, y=y), max.overlaps = 50, size=2) +
-  scale_alpha(range=c(0.4,1), labels=function(x) {format(x, big.mark = ",", decimal.mark = ".", scientific = F)}) +
+  scale_alpha(range=c(0.3,1), labels=function(x) {format(x, big.mark = ",", decimal.mark = ".", scientific = F)}) +
   theme_classic() +
   theme(legend.position = 'bottom', 
         legend.direction="horizontal", 
@@ -216,7 +216,7 @@ pmmr_data<-read_tsv(params$pmmr_results_fn) %>%
 ## Calculate median
 median_pmmr <- median(pmmr_data$pMismatch)
 ## Filter out lowest coverage results. 
-pmmr_data %>% filter(nSNPs > red_below_x_snps)
+pmmr_data <- pmmr_data %>% filter(nSNPs > red_below_x_snps)
 
 ## Dynamic figure size based on number of points.
 fig_width=max(1+(0.2*nrow(pmmr_data)), 6)
@@ -225,7 +225,7 @@ fig_height=max(5/8.25*fig_width, 5)
 
 ```{r plot pMMR, echo=FALSE, fig.height=fig_height, fig.width=fig_width, message=FALSE}
 if (nrow(pmmr_data) > 1) {
-ggplot(pmmr_data, aes(x=fct_reorder(Label, pMismatch), y=pMismatch, col=factor(colour, levels=c(paste0("<",red_below_x_snps," SNPs"),paste0("<",black_above_x_snps," SNPs"),paste0(black_above_x_snps,"+ SNPs"))))) +
+ggplot(pmmr_data, aes(x=fct_reorder(Label, pMismatch), y=pMismatch, col=factor(colour, levels=c(paste0("<",black_above_x_snps," SNPs"),paste0(black_above_x_snps,"+ SNPs"))))) +
   scale_color_manual(values=stats::setNames(c("grey","black"), c(paste0("<",black_above_x_snps," SNPs"), paste0(black_above_x_snps,"+ SNPs")))) +
   labs(color = "number of\noverlapping\nSNPs") +
   geom_hline(yintercept = median_pmmr, colour="gray70", lty=3) +
