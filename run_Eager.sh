@@ -29,7 +29,7 @@ for eager_input in /mnt/archgen/MICROSCOPE/eager_inputs/*.eager_input.tsv; do
 
     ## Check if batch has barcodes and their lengths.
     ##    barcode_rem will be the trim parameter calls for eager if needed, else ''.
-    barcode_rem=$( (grep ${batch_name} ${barcode_info_fn} | awk '{print "--post_ar_trim_front",$2,"--post_ar_trim_tail",$3}') || echo '' )
+    barcode_rem=$( (grep ${batch_name} ${barcode_info_fn} | awk '{print "--run_post_ar_trimming --post_ar_trim_front",$2,"--post_ar_trim_tail",$3}') || echo '' )
 
     ## If the eager input is newer than the output directory or the output directory doesnt exist, then eager is run on the input
     if [[ ${eager_input} -nt ${eager_output_dir} ]]; then
