@@ -61,7 +61,7 @@ for eager_input in /mnt/archgen/MICROSCOPE/eager_inputs/*.eager_input.tsv; do
     elif [[ ${eager_output_dir} -nt ${eager_output_dir}/multiqc/multiqc_report.html ]]; then
         if [[ ${user_reply} != "Y" ]]; then 
             unset user_reply
-            echo -e "${Yellow}Output directory for batch ${Red}$(basename ${eager_output_dir})${Yellow} already exists, but lacks 'multiqc/multiqc_report.html', or that report is outdated.'$(tput sgr0)" ## '$(tput sgr0) returns to normal printing after the line is done
+            echo -e "${Yellow}Output directory for batch ${Red}$(basename ${eager_output_dir})${Yellow} already exists, but lacks 'multiqc/multiqc_report.html', or that report is outdated.$(tput sgr0)" ## '$(tput sgr0) returns to normal printing after the line is done
             echo "If a nextflow run for that batch did not complete successfully and was killed, I can try to resume that run from where it failed."
             echo """Would you like me to try?
             [y]es
