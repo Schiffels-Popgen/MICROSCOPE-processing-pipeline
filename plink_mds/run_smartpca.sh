@@ -17,6 +17,7 @@ if [[ $(readlink -f ${input_geno}) -nt ${output_dir}/West_Eurasian_pca.evec ]]; 
     echo -e "outliermode: 2" >>smartpca.par
     echo -e "numthreads: ${cpus}" >>smartpca.par
     echo -e "lsqproject: YES" >>smartpca.par
+    echo -e "snpweightoutname: West_Eurasian_pca.weights"
     # echo -e "autoshrink: YES" >>smartpca.par
     smartpca -p smartpca.par
 else
