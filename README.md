@@ -45,11 +45,19 @@ Requires the correct `.credentials` file. Option `-r` not provided by `seqIds2Ea
 
 ## run_Eager.sh
 If no output from a completed nf-core/eager run is found for a batch (i.e. a MultiQC report html), runs eager on the batch.
+This script will also look into `barcode_info_fn`, a text file of three columns that provides the batch name, and length of 
+barcodes on the head and tail of each fragment. This information is used to activate the `post_ar_trimming` of nf-core/eager.
+The barcode info file is formatted as shown below:
+```
+batch_name	front_trim	tail_trim
+2022-01-01-my_batch	7	7
+```
+
 If a run has failed or the eager output predates the creation time of the input TSV (i.e. additional data has become
 available for a batch) `run_Eager.sh` will ask the user if it should resume each run in turn. User can reply "Yes to all"
 to resume all further failed runs.
 ```
-Output directory for batch <batch_name> already exists, but lacks 'multiqc/multiqc_report.html', or that report is outdated.'
+Output directory for batch 2022-01-01-my_batch already exists, but lacks 'multiqc/multiqc_report.html', or that report is outdated.'
 If a nextflow run for that batch did not complete successfully and was killed, I can try to resume that run from where it failed.
 Would you like me to try?
             [y]es
