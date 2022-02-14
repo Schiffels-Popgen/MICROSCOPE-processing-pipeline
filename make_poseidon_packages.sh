@@ -88,11 +88,21 @@ if [[ ${force_update_switch} == "TRUE" || ${update_switch} == "on" ]]; then
     ## Construct list of site names, lat and lon from pandora
     Rscript /mnt/archgen/MICROSCOPE/site_ids_to_names.R
 
+    ## Set the population field in fam file to the Site ID
+    for fam_f in /mnt/archgen/MICROSCOPE/poseidon_packages/*/*fam; do
+        awk -v OFS="\t" -F "\t" '{$1=substr($2,1,3); print $0}' ${fam_f} >${fam_f}.2
+        mv ${fam_f} ${fam_f}.old
+        mv ${fam_f}.2 ${fam_f}
+    done
+
     ## Set the population field in ind file to the Site ID
     for ind_f in /mnt/archgen/MICROSCOPE/poseidon_packages/*/*ind; do
         awk -v OFS="\t" -F "\t" '{$3=substr($1,1,3); print $0}' ${ind_f} >${ind_f}.2
         mv ${ind_f} ${ind_f}.old
         mv ${ind_f}.2 ${ind_f}
+
+        ## Then update the fam hashes in POSEIDON.yml
+        trident update -d $(dirname ${ind_f})
     done
 
     echo -e "${Yellow}Updating package metadata${Normal}"
