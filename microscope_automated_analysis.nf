@@ -7,7 +7,7 @@ def helpMessage() {
   =========================================
   Usage:
   The typical command for running the pipeline on sdag is as follows:
-  nextflow run microscope_automated_analysis.nf -profile eva,archgen --batch <batch_name> --outdir /mnt/archgen/MICROSCOPE/automated_analysis
+  nextflow run microscope_automated_analysis.nf -c MICROSCOPE.config -profile eva,archgen,automated_analysis --batch <batch_name> --outdir /mnt/archgen/MICROSCOPE/automated_analysis
   Mandatory arguments:
       -profile [str]          Institution or personal hardware config to use (e.g. standard, docker, singularity, conda, aws). Ask your system admin if unsure, or check documentation.
       --batch   [str]         The sequencing batch name to process.
@@ -108,6 +108,7 @@ process microscope_pca {
     output:
     file 'West_Eurasian_pca.evec'
     file 'West_Eurasian_pca.eval'
+    file 'West_Eurasian_pca.weights'
 
     script:
     """
@@ -128,7 +129,6 @@ Channel.fromPath("/mnt/archgen/MICROSCOPE/poseidon_packages/${params.batch}/*.{b
     .into { ch_input_for_read; ch_input_dummy }
 
 process kinship_read {
-    validExitStatus 0,11 // exit status of 11 given when no samples have sufficient coverage
     conda 'conda-forge::python=2.7.15 conda-forge::r-base=4.0.3 bioconda::plink=1.90b6.21'
     tag "${params.batch}"
     publishDir "${params.outdir}/${params.batch}/read", mode: 'copy'
