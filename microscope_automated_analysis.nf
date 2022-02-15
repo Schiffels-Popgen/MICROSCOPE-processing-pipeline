@@ -106,9 +106,9 @@ process microscope_pca {
     val dummy from ch_dummy_for_pca_dependency
 
     output:
-    file 'West_Eurasian_pca.evec'
-    file 'West_Eurasian_pca.eval'
-    file 'West_Eurasian_pca.weights'
+    file 'West_Eurasian_pca.evec' optional true
+    file 'West_Eurasian_pca.eval' optional true
+    file 'West_Eurasian_pca.weights' optional true
 
     script:
     """
