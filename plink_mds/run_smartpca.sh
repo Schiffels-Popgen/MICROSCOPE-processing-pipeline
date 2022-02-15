@@ -6,6 +6,8 @@ input_ind=$3
 poplist=$4
 cpus=$5
 
+output_dir='/mnt/archgen/MICROSCOPE/automated_analysis/microscope_pca'
+
 ## Only run if the bed file has been updated
 if [[ $(readlink -f ${input_geno}) -nt ${output_dir}/West_Eurasian_pca.evec ]]; then
     echo -e "genotypename: ${input_geno}" >smartpca.par
