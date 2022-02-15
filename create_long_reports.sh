@@ -4,6 +4,8 @@
 TEMP=`getopt -q -o hf --long help,force -n 'create_long_reports.sh' -- "$@"`
 eval set -- "$TEMP"
 
+Yellow=$(tput sgr0)'\033[1;33m' ## Yellow normal face
+
 ## Helptext function
 function Helptext {
     echo -ne "\t Usage: create_long_reports.sh [-f] \n\n"
@@ -91,8 +93,8 @@ for idx in ${!finished_runs[@]}; do
     # exit 0 ## For Testing
     elif [[ ${evec_fn} -ot ${finished_runs[${idx}]} ]]; then
         ## Error message when the PCA results are outdated.
-        echo "PCA has not been updated since package \'${batch_Id}\' was updated."
-        echo "Consider updating the PCA evec file, or use '-f' to force report (re)creation."
+        echo -e "${Yellow}PCA has not been updated since package '${batch_Id}' was updated.$(tput sgr0)"
+        echo "  Consider updating the PCA evec file, or use '-f' to force report (re)creation."
     else
         echo "Long report for ${batch_Id} did not need updating. Skipping this batch."
     fi
