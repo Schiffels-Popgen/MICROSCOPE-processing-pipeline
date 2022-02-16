@@ -1,5 +1,28 @@
 #!/usr/bin/env bash
 
+## Parse CLI args.
+TEMP=`getopt -q -o hd --long help,dry-run -n 'run_Eager.sh' -- "$@"`
+eval set -- "$TEMP"
+
+## Helptext function
+function Helptext {
+    echo -ne "\t Usage: $0 [-d] \n\n"
+    echo -ne "Compares the timestamp of the eager input tsv and MultiQC report for a sequencing batch and runs eager if necessary.\n\n"
+    echo -ne "options:\n"
+    echo -ne "-h, --help\t\tPrint this text and exit.\n"
+    echo -ne "-d, --dry-run\t\tOnly print the names of batches that need re-processing. Do not initiate any runs.\n"
+}
+
+## Read cli arguments
+while true ; do
+    case "$1" in
+        -d|--dry-run) dry_run="TRUE"; shift 1;;
+        -h|--help) Helptext; exit 0 ;;
+        --) break;;
+        *) echo -e "Invalid option provided.\n"; Helptext; exit 1;; ## Should never trigger since $TEMP has had invalid options removed. Good to have for dev
+    esac
+done
+
 # eager_version='2.2.1' #7971d89e54
 # eager_version='2.3.5' ## Changed on 05/07/2021
 eager_version='2.4.2' ## Changed 01/02/2022. Fixes resource requirement of bedtools coverage.
@@ -33,6 +56,10 @@ for eager_input in /mnt/archgen/MICROSCOPE/eager_inputs/*.eager_input.tsv; do
 
     ## If the eager input is newer than the output directory or the output directory doesnt exist, then eager is run on the input
     if [[ ${eager_input} -nt ${eager_output_dir} ]]; then
+        if [[ ${dry_run} == "TRUE" ]]; then
+            echo "${batch_name} needs reprocessing."
+            continue
+        fi
         # echo "${eager_input}:    Input is newer"
         echo "Running eager on ${eager_input}:"
         echo "nextflow run nf-core/eager \
@@ -59,6 +86,10 @@ for eager_input in /mnt/archgen/MICROSCOPE/eager_inputs/*.eager_input.tsv; do
             
     ## If the MultiQC report is older than the directory, or doesnt exist yet, try to resume execution. Helpful for runs that failed.
     elif [[ ${eager_output_dir} -nt ${eager_output_dir}/multiqc/multiqc_report.html ]]; then
+        if [[ ${dry_run} == "TRUE" ]]; then
+            echo "${batch_name} needs reprocessing."
+            continue
+        fi
         if [[ ${user_reply} != "Y" ]]; then 
             unset user_reply
             echo -e "${Yellow}Output directory for batch ${Red}$(basename ${eager_output_dir})${Yellow} already exists, but lacks 'multiqc/multiqc_report.html', or that report is outdated.$(tput sgr0)" ## '$(tput sgr0) returns to normal printing after the line is done
