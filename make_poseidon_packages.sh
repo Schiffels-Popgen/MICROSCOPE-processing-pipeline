@@ -39,10 +39,10 @@ for seq_batch in $(find /mnt/archgen/MICROSCOPE/eager_outputs/* -maxdepth 0 ! -p
             -n ${batch_name}
 
         sed -i -e ${regex} /mnt/archgen/MICROSCOPE/poseidon_packages/${batch_name}/POSEIDON.yml
-        rename -e ${regex} /mnt/archgen/MICROSCOPE/poseidon_packages/${batch_name}/pileupcaller.*.txt
+        rename -f -e ${regex} /mnt/archgen/MICROSCOPE/poseidon_packages/${batch_name}/pileupcaller.*.txt
         ## Remove trailing .txt from path names. Needed for loading the data into R with admixr.
         sed -i -e 's/.txt$//' /mnt/archgen/MICROSCOPE/poseidon_packages/${batch_name}/POSEIDON.yml
-        rename -e 's/.txt$//' /mnt/archgen/MICROSCOPE/poseidon_packages/${batch_name}/${batch_name}*txt
+        rename -f -e 's/.txt$//' /mnt/archgen/MICROSCOPE/poseidon_packages/${batch_name}/${batch_name}*txt
 
         ## Also make plink format dataset (needed for READ)
         trident genoconvert -d /mnt/archgen/MICROSCOPE/poseidon_packages/${batch_name} --outFormat PLINK
@@ -69,10 +69,10 @@ for seq_batch in $(find /mnt/archgen/MICROSCOPE/eager_outputs/* -maxdepth 0 ! -p
             -n ${batch_name}
 
         sed -i -e ${regex} /mnt/archgen/MICROSCOPE/poseidon_packages/${batch_name}/POSEIDON.yml
-        rename -e ${regex} /mnt/archgen/MICROSCOPE/poseidon_packages/${batch_name}/pileupcaller.*.txt
+        rename -f -e ${regex} /mnt/archgen/MICROSCOPE/poseidon_packages/${batch_name}/pileupcaller.*.txt
         ## Remove trailing .txt from path names. Needed for loading the data into R with admixr.
         sed -i -e 's/.txt$//' /mnt/archgen/MICROSCOPE/poseidon_packages/${batch_name}/POSEIDON.yml
-        rename -e 's/.txt$//' /mnt/archgen/MICROSCOPE/poseidon_packages/${batch_name}/${batch_name}*txt
+        rename -f -e 's/.txt$//' /mnt/archgen/MICROSCOPE/poseidon_packages/${batch_name}/${batch_name}*txt
 
         ## Also make plink format dataset (needed for READ)
         trident genoconvert -d /mnt/archgen/MICROSCOPE/poseidon_packages/${batch_name} --outFormat PLINK
@@ -110,7 +110,8 @@ if [[ ${force_update_switch} == "TRUE" || ${update_switch} == "on" ]]; then
     for janno_f in /mnt/archgen/MICROSCOPE/poseidon_packages/*/*.janno; do
         temp_janno="$(dirname ${janno_f})/temp_janno"
         head -n1 ${janno_f} > ${temp_janno}
-        tail -n +2 ${janno_f} | awk -F '\t' -v OFS='\t' '{$19=substr($1,1,3); print $0}' >> ${temp_janno}
+        ## Group_Name is column 3 in poseidon 2.5.0 packages made with trident 0.26.1 +. Used to be column 19 in the past.
+        tail -n +2 ${janno_f} | awk -F '\t' -v OFS='\t' '{$3=substr($1,1,3); print $0}' >> ${temp_janno}
 
         temp_site_list="$(dirname ${janno_f})/temp_site_list"
         echo -e "ID\tSite\tLatitude\tLongitude" > ${temp_site_list}
