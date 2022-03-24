@@ -52,7 +52,7 @@ if [[ ${force_remake} == "TRUE" || ${newest_janno} -nt /mnt/archgen/MICROSCOPE/f
 
     for janno in ${poseidon_dir}/*/*.janno; do
         ## Add list of unique group IDs from each janno to the forgelist
-        tail -n +2 ${janno} | awk -F "\t" -v OFS='\t' '{print $19}' | sort -u >> ${forge_dir}/forgelist.txt
+        tail -n +2 ${janno} | awk -F "\t" -v OFS='\t' '{print $3}' | sort -u >> ${forge_dir}/forgelist.txt
     done
 
     trident forge --forgeFile ${forge_dir}/forgelist.txt -d ${poseidon_dir} -o ${package_dir} -n microscope_pca --intersect --eigenstrat
