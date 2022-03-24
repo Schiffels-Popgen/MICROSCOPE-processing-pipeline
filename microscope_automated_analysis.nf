@@ -67,7 +67,7 @@ process pmmrCalculator {
 }
 
 process forge_package {
-    conda 'bioconda::poseidon-trident'
+    conda 'bioconda::poseidon-trident>=0.26.1'
     memory '1GB'
     cpus 1
     
