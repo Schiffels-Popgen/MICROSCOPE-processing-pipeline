@@ -29,6 +29,14 @@ eager_version='2.4.2' ## Changed 01/02/2022. Fixes resource requirement of bedto
 
 microscope_config='/mnt/archgen/MICROSCOPE/MICROSCOPE.config'
 barcode_info_fn='/mnt/archgen/MICROSCOPE/batches_with_adapters.tsv'
+tower_config='/mnt/archgen/MICROSCOPE/.nextflow_tower'
+
+## If a tower workspace id is provided in .nextflow_tower, use it, else print a warning and continue
+if [[ -f ${tower_config} ]]; then
+    source ${tower_config}
+else
+    echo "No nextflow tower config file found. Run information will not be posted to any nextflow tower workspace."
+fi
 
 ## Set profiles based on cluster.
 if [[ $(hostname) =~ ^mpi- ]]; then

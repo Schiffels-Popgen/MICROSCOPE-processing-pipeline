@@ -8,3 +8,4 @@ work/
 .RData
 .Rhistory
 *.DS_Store
+.nextflow_tower
