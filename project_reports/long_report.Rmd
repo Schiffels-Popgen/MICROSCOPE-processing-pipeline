@@ -254,7 +254,7 @@ The colour of the points indicates the relative confidence around the pMMR. Gray
 Not enough individuals with high enough SNP coverage to calculate pMMR (requires a minimum of 2 individuals each with a minimum of `r format(snp_cov_cutoff, digits = 0, big.mark = " ", decimal.mark = ",")` SNPs). pMMR results will be added here if/when additional sequencing data becomes available.
 \fi
 
-```{r plot pMMR, echo=FALSE, fig.height=fig_height, fig.width=fig_width, message=FALSE, eval=nrow(pmmr_data) > 1}
+```{r plot pMMR, echo=FALSE, fig.height=fig_height, fig.width=fig_width, message=FALSE, eval=nrow(pmmr_data) > 0}
 ggplot(pmmr_data, aes(x=fct_reorder(Label, pMismatch), y=pMismatch, col=factor(colour, levels=c(paste0("<",black_above_x_snps," SNPs"),paste0(black_above_x_snps,"+ SNPs"))))) +
   scale_color_manual(values=stats::setNames(c("grey","black"), c(paste0("<",black_above_x_snps," SNPs"), paste0(black_above_x_snps,"+ SNPs")))) +
   labs(color = "number of\noverlapping\nSNPs") +
