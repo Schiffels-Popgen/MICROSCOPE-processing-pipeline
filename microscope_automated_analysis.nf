@@ -153,6 +153,11 @@ process kinship_read {
     ## Transpose the plink data
     plink --bfile ${bed.baseName}.autosomes --out ${bed.baseName}.autosomes.recoded --recode  --transpose 
 
+    ## If only one individual is left after filtering, stop execution using the ignored exit code.
+    if [[ \$(wc -l ${bed.baseName}.autosomes.recoded.tfam | cut -f1 -d " ") == "1" ]]; then
+        exit 11
+    fi
+
     python /r1/people/thiseas_christos_lamnidis/Software/bitbucket/tguenther/read/READ.py ${bed.baseName}.autosomes.recoded
 
     mv READ_results ${params.batch}.read.txt
