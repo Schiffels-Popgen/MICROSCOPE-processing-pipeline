@@ -225,7 +225,7 @@ median_pmmr <- median(pmmr_data$pMismatch)
 pmmr_data <- pmmr_data %>% filter(nSNPs > red_below_x_snps)
 
 ## Dynamic figure size based on number of points.
-fig_width=max(1+(0.2*nrow(pmmr_data)), 6)
+fig_width=min(max(1+(0.2*nrow(pmmr_data)), 6), 225)
 fig_height=max(5/8.25*fig_width, 5)
 show_pmmr <- nrow(pmmr_data) > 1
 ```
