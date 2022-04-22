@@ -26,6 +26,7 @@ subtitle: "`r params$set_subtitle`"
 \newpage
 ```{r load_libraries, message=FALSE, warning=FALSE, include=FALSE}
 ## Load required packages
+library(stringr)
 library(dplyr)
 library(tidyr)
 library(ggplot2)
@@ -144,9 +145,16 @@ good_cov_inds <- snp_cov$Sample[which(snp_cov$`# SNPs Covered` >= snp_cov_cutoff
 ```
 
 ```{r gather sexdet data, message=FALSE, include=FALSE}
+## Set up filter string to only keep sexdet from the strandedness of interest
+keep_only <- ifelse(
+    str_detect(basename(params$snp_coverage_file), "double"), 
+    "doublestrand",
+    "singlestrand"
+    )
+
 ## Load and parse sex determination stats.
 sex_det <- read_tsv(params$sex_det_file, col_names=c("#Sample", "#SnpsAut", "#SNPsX", "#SnpsY", "NrAut", "NrX", "NrY", "x-rate", "y-rate"), col_types='ciiiiiidd', skip=1) %>%
-  filter(!grepl("doublestrand", `#Sample`)) %>% ## When both ssDNA and dsDNA libraries exist, only keep single stranded libs.
+  filter(grepl(keep_only, `#Sample`)) %>% ## When both ssDNA and dsDNA libraries exist, only keep the strandedness of interest
   separate(`#Sample`, into=c("Sample"), sep="[._]", extra='drop') %>%
   select(`Sample`, `x-rate`, `y-rate`) %>%
   infer_sex(sex_cutoffs=sex_cutoffs)
@@ -227,7 +235,7 @@ pmmr_data <- pmmr_data %>% filter(nSNPs > red_below_x_snps)
 ## Dynamic figure size based on number of points.
 fig_width=min(max(1+(0.2*nrow(pmmr_data)), 6), 225)
 fig_height=max(5/8.25*fig_width, 5)
-show_pmmr <- nrow(pmmr_data) > 1
+show_pmmr <- nrow(pmmr_data) > 0
 ```
 \newif\ifpmmr
 \pmmr`r ifelse(show_pmmr, 'true', 'false')`
