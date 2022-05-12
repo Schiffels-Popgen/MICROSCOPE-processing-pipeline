@@ -15,6 +15,8 @@ def helpMessage() {
   """.stripIndent()
 }
 
+nextflow.enable.dsl=1 // Force DSL1 syntax
+
 ///////////////////////////////////////////////////////////////////////////////
 /* --                SET UP CONFIGURATION VARIABLES                       -- */
 ///////////////////////////////////////////////////////////////////////////////
@@ -145,7 +147,7 @@ process kinship_read {
     script:
     """
     ## Filter out non-autosomal genotypes, and samples with missingness below 1.5% (about 18k SNPs)
-    plink --bfile ${bed.baseName} --make-bed --out ${bed.baseName}.autosomes --autosome --mind 0.985
+    plink --bfile ${bed.baseName} --make-bed --out ${bed.baseName}.autosomes --autosome --mind 0.995
 
     ## Create map file from bim
     ## cut -f 1-4 ${bim.baseName}.autosomes.bim >${bed.baseName}.autosomes.recoded .map
