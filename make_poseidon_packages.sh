@@ -88,20 +88,20 @@ for seq_batch in $(find /mnt/archgen/MICROSCOPE/eager_outputs/* -maxdepth 0 ! -p
 done
 
 if [[ ${force_update_switch} == "TRUE" || ${update_switch} == "on" ]]; then
- 
+
     for batch in ${update_batches}; do
         ## Set the population field in fam file to the Site ID
         echo -e "${Yellow}${batch}:  Setting Population name in .fam and .ind files to Pandora Site_Id.${Normal}"
         fam_f="/mnt/archgen/MICROSCOPE/poseidon_packages/${batch}/${batch}.fam"
         awk -v OFS="\t" -F "\t" '{$1=substr($2,1,3); print $0}' ${fam_f} >${fam_f}.2
-        mv ${fam_f} ${fam_f}.old
+        # mv ${fam_f} ${fam_f}.old
         mv ${fam_f}.2 ${fam_f}
 
 
         ## Set the population field in ind file to the Site ID
         ind_f="/mnt/archgen/MICROSCOPE/poseidon_packages/${batch}/${batch}.ind"
         awk -v OFS="\t" -F "\t" '{$3=substr($1,1,3); print $0}' ${ind_f} >${ind_f}.2
-        mv ${ind_f} ${ind_f}.old
+        # mv ${ind_f} ${ind_f}.old
         mv ${ind_f}.2 ${ind_f}
 
         ## Add Site_ID and Site_Name to .janno
@@ -145,6 +145,26 @@ if [[ ${force_update_switch} == "TRUE" || ${update_switch} == "on" ]]; then
         mv ${janno_f} ${janno_f}.old
         mv ${temp_janno} ${janno_f}
 
+        echo -e "${Yellow}${batch}:  Adding genetic sex to fam and ind files ${Normal}"
+        ## Update genetic sex in .fam file based on sexes in janno file
+        mv ${fam_f} ${fam_f}.old ## Keep old fam file around for testing
+        ## First paste together the fam and janno files, throw away the header line, then use awk to update the sex in the fam file based on the janno file
+        ## Results are saved to ${fam_f}
+        (echo ""; cat ${fam_f}.old) | \
+            paste - <( awk -F "\t" -v OFS="\t" '{print $1,$2,$3}' ${janno_f}) | \
+            tail -n +2 | \
+            awk -F "\t" -v OFS="\t" '{ 
+                if ($8 == "M") {
+                    $5=1
+                } else if ($8 == "F") {
+                    $5=2
+                }; print $1, $2, $3, $4, $5, $6}' > ${fam_f}
+
+        ## Update genetic sex in .ind files
+        mv ${ind_f} ${ind_f}.old
+        awk -F "\t" -v OFS="\t" '{print $1,$2,$3}' ${janno_f} | tail -n +2 >${ind_f}
+
+        echo -e "${Yellow}${batch}:  Updating POSEIDON.yml hashes ${Normal}"
         ## Then update the hashes in POSEIDON.yml
         trident update -d $(dirname ${ind_f})
 
