@@ -1,29 +1,44 @@
 ---
 output:
   pdf_document: default
-  html_notebook:
-    code_folding: hide
-  html_document:
-    df_print: paged
+geometry: "left=2cm,right=2cm,top=2cm,bottom=2cm"
 params: 
     set_subtitle: "Relic_samples"
     snp_coverage_file: "~/mount/eager_outputs/2020-05-03-relic_samples/genotyping/double_eigenstrat_coverage.txt"
     sex_det_file: "~/mount/eager_outputs/2020-05-03-relic_samples/sex_determination/SexDet.txt"
     stats_table: "~/mount/eager_outputs/2020-05-03-relic_samples/multiqc/multiqc_data/multiqc_general_stats.txt"
-    poseidon_geno: "~/mount/poseidon_packages/2020-05-03-relic_samples/2020-05-03-relic_samples.geno.txt"
-    poseidon_snp: "~/mount/poseidon_packages/2020-05-03-relic_samples/2020-05-03-relic_samples.snp.txt"
-    poseidon_ind: "~/mount/poseidon_packages/2020-05-03-relic_samples/2020-05-03-relic_samples.ind.txt"
+    poseidon_geno: "~/mount/poseidon_packages/2020-05-03-relic_samples/2020-05-03-relic_samples.geno"
+    poseidon_snp: "~/mount/poseidon_packages/2020-05-03-relic_samples/2020-05-03-relic_samples.snp"
+    poseidon_ind: "~/mount/poseidon_packages/2020-05-03-relic_samples/2020-05-03-relic_samples.ind"
     poseidon_janno: "~/mount/forged_packages/microscope_pca/microscope_pca.janno"
     pmmr_results_fn: "~/mount/automated_analysis/2020-05-03-relic_samples/pmmr/2020-05-03-relic_samples.pmmr.txt"
     pca_bg_annotation: "~/Software/github/Schiffels-Popgen/MICROSCOPE-processing-pipeline/project_reports/assets/bg_annotation.txt"
     evec_fn: "~/mount/automated_analysis/microscope_pca/West_Eurasian_pca.evec"
     eval_fn: "~/mount/automated_analysis/microscope_pca/West_Eurasian_pca.eval"
     cred_file: "~/Software/github/Schiffels-Popgen/MICROSCOPE-processing-pipeline/.credentials"
-    
-title: "Extended preliminary data report"
+    report_date: "18-05-2022"
+title: "Preliminary data report"
 subtitle: "`r params$set_subtitle`"
+header-includes: 
+  - \usepackage{fancyhdr}
+  - \fancyhf{}
+  - \fancypagestyle{plain}{\pagestyle{fancy}}
+  - \pagestyle{fancy}
+  - \fancyhead[R]{\includegraphics[height = 1.5cm]{/Users/lamnidis/MPI_Logo_ENG_CMYK_green.png}}
+  - \headheight 48pt
 ---
-\newpage
+
+\begin{center}
+ERC-Project MICROSCOPE. Sample Report.
+
+Project lead: Dr. Stephan Schiffels
+
+Scientific Staff: Dr. Thiseas C. Lamnidis and Dr. Angela Mötsch
+
+Date of Report: `r params$report_date`
+
+\end{center}
+
 ```{r load_libraries, message=FALSE, warning=FALSE, include=FALSE}
 ## Load required packages
 library(stringr)
@@ -89,6 +104,46 @@ infer_sex <- function(sex_det, sex_cutoffs){
 }
 ```
 
+\
+\
+\
+\
+\
+\
+\
+\
+\
+\
+\
+\
+\
+\
+\
+\hrule \relax
+The following report summarises the preliminary archaeogenetic results for individuals from the following sites:
+```{r echo=FALSE}
+con <- get_pandora_connection(params$cred_file)
+dataset_inds <- read_tsv(params$poseidon_ind, col_names=c("Ind","Sex","Site_Id"), col_types='ccc') %>% 
+  group_by(Site_Id) %>% 
+  summarise(.groups='keep', "Number of Individuals"=n())
+
+site_info <- get_df("TAB_Site", con) %>% 
+  filter(`site.Full_Site_Id` %in% dataset_inds$Site_Id) %>%
+  select(`site.Full_Site_Id`, `site.Name`, `site.Longitude`, `site.Latitude`)
+site_table <- full_join(site_info, dataset_inds, by=c("site.Full_Site_Id"="Site_Id")) %>%
+  rename(
+    Site_ID = site.Full_Site_Id,
+    Name = site.Name,
+    Longitude = site.Longitude,
+    Latitude = site.Latitude
+  ) 
+site_table %>%
+  kable(longtable = T, format.args=list(big.mark = ',', digits=3))  %>%
+  kable_styling(full_width=F, latex_options=c("hold_position", "repeat_header"))
+
+```
+
+\newpage
 # Descriptive statistics of sequencing data
 
 The table below contains some descriptive statistics on the sequencing data. The meaning of each of these statistics is as follows:
@@ -162,7 +217,6 @@ sex_det <- read_tsv(params$sex_det_file, col_names=c("#Sample", "#SnpsAut", "#SN
 
 ```{r arch_IDs from pandora, message=FALSE, include=FALSE}
 ## Load ArchIDs from pandora using sidora
-con <- get_pandora_connection(params$cred_file)
 pandora_data <- get_df("TAB_Individual", con) %>% 
   filter(`individual.Full_Individual_Id` %in% sex_det$Sample) %>%
   select(`individual.Full_Individual_Id`, `individual.Archaeological_ID`) %>%
