@@ -331,61 +331,6 @@ Genetic analysis revealed no evidence of genetic kinship among the analysed indi
 
 \newpage
 
-# Pairwise mismatch rate between individuals
-
-```{r import pMMR, echo=FALSE, fig.height=5, fig.width=8.25, message=FALSE}
-red_below_x_snps=100
-black_above_x_snps=200
-
-pmmr_data<-read_tsv(params$pmmr_results_fn) %>%
-  mutate(Label=paste(Ind1,Ind2, sep="-"), colour=if_else(nSNPs < red_below_x_snps, paste0("<",red_below_x_snps," SNPs"), if_else(nSNPs < black_above_x_snps, paste0("<",black_above_x_snps," SNPs"),paste0(black_above_x_snps,"+ SNPs")))) %>%
-  ## Remove rows with p Mismatch == NA which are invdividuals with 0 overlapping SNPs. Also remove rows with pMMR=0 or 1, which are caused by comparisons of individuals with low overlapping SNPs (usually less that 10). They can swamp other results in some datasets
-  filter(!is.na(pMismatch), pMismatch > 0, pMismatch < 1)
-
-## Calculate median
-median_pmmr <- median(pmmr_data$pMismatch)
-## Filter out lowest coverage results. 
-pmmr_data <- pmmr_data %>% filter(nSNPs > red_below_x_snps)
-
-## Dynamic figure size based on number of points.
-fig_width=min(max(1+(0.2*nrow(pmmr_data)), 6), 225)
-fig_height=max(5/8.25*fig_width, 5)
-show_pmmr <- nrow(pmmr_data) > 0
-```
-\newif\ifpmmr
-\pmmr`r ifelse(show_pmmr, 'true', 'false')`
-\ifpmmr
-The pairwise genotype mismatch rate (pMMR) between different individuals, can be indicative of genetic kinship. Unrelated individuals will have a higher pMMR, with multiple unrelated pairs forming a plateau around the median pMMR value. The pMMR of genetically related individuals is lowered proportionally to the closeness of their relationship. Some rough expected values for pMMR based on an underlying relationship are:
-
-* **Identical Twins/ Same individual**: 50% of median value
-* **First Degree**: 75% of median value
-* **Second Degree**: 87.5% of median value
-
-**It is often difficult to tell apart second from third degree relationships.** To do that, we often employ additional analytical methods once a suspected genetic relationship is identified with pMMR.
-
-The colour of the points indicates the relative confidence around the pMMR. Gray points are less reliable, and black points are reliable estimates of the pMMR. The numbers above each point correspond to the number of SNPs used in the calculation of the pMMR between each pair of individuals. The higher this number is the more reliable the estimate.
-
-\else
-Not enough individuals with high enough SNP coverage to calculate pMMR (requires a minimum of 2 individuals each with a minimum of `r format(snp_cov_cutoff, digits = 0, big.mark = " ", decimal.mark = ",")` SNPs). pMMR results will be added here if/when additional sequencing data becomes available.
-\fi
-
-```{r plot pMMR, echo=FALSE, fig.height=fig_height, fig.width=fig_width, message=FALSE, eval=nrow(pmmr_data) > 0}
-ggplot(pmmr_data, aes(x=fct_reorder(Label, pMismatch), y=pMismatch, col=factor(colour, levels=c(paste0("<",black_above_x_snps," SNPs"),paste0(black_above_x_snps,"+ SNPs"))))) +
-  scale_color_manual(values=stats::setNames(c("grey","black"), c(paste0("<",black_above_x_snps," SNPs"), paste0(black_above_x_snps,"+ SNPs")))) +
-  labs(color = "number of\noverlapping\nSNPs") +
-  geom_hline(yintercept = median_pmmr, colour="gray70", lty=3) +
-    geom_text(label="median", x=nrow(pmmr_data), y=median_pmmr, show.legend=F, size=2.5, nudge_y=0.1) +
-  geom_point(size=2) + 
-  geom_text(aes(label=nSNPs, y=pMismatch), size=1.5, angle=90, nudge_y=0.05) +
-  theme_classic(base_size=13) + 
-  theme(axis.text.x = element_text(angle=90, hjust=1, vjust=0.5), legend.title.align = 0.5) +
-  expand_limits(x = 0, y = 0) +
-  xlab('') +
-  ylab("pairwise genotype mismatch rate") +
-  coord_cartesian(clip = "off")
-```
-\newpage
-
 # Principal component analysis
 ```{r import PCA data, echo=FALSE, message=FALSE, warning=FALSE}
 pop_labels <- read_tsv(params$pca_bg_annotation, col_names = c("pop","label","region","colour"), col_types='ccci')
@@ -399,11 +344,6 @@ pca_evec <- readr::read_fwf(params$evec_fn,
                           col_select=c("ind","pc1","pc2","pop"), col_types='cddc'
                           )
 
-## Prepare list of populations for text
-pops_for_text <- pop_labels %>% 
-  group_by(region) %>% 
-  summarise(pops=paste(pop, collapse=", "), n=n())
-  
 bg_plot_data <- inner_join(pca_evec, pop_labels, by="pop")
 pca_samples <- pca_evec %>% filter(ind %in% good_cov_inds)
 
@@ -431,16 +371,11 @@ The following plot shows how ancient individuals  with sufficient genomic covera
 
 The colour used in the plotting of present-day individuals indicates rough geographic regions, as follows:
 
-* **Caucasus**: \textcolor[HTML]{F8766D}{red} (`r pops_for_text[pops_for_text$region == "Caucasus",2]`)
-* **Near East**: \textcolor[HTML]{A3A500}{olive} (`r pops_for_text[pops_for_text$region == "NEast",2]`)
-* **South Europe**: \textcolor[HTML]{00B0F6}{light blue} (`r pops_for_text[pops_for_text$region == "SEur",2]`)
-* **Central/North Europe**: \textcolor[HTML]{E76BF3}{magenta} (`r pops_for_text[pops_for_text$region == "NEur",2]`)
-* **Northeastern/Eastern Europe**: \textcolor[HTML]{00BF7D}{green} (`r pops_for_text[pops_for_text$region == "NEEur",2]`)
-
-\else
-No individuals pass the SNP coverage cutoff for this analysis (`r format(snp_cov_cutoff, digits = 0, big.mark = " ", decimal.mark = ",")` SNPs). A PCA for this data will be added here if/when additional sequencing data becomes available.
-\fi
-
+* **Caucasus**: \textcolor[HTML]{F8766D}{red}
+* **Near East**: \textcolor[HTML]{A3A500}{olive}
+* **South Europe**: \textcolor[HTML]{00B0F6}{light blue}
+* **Central/North Europe**: \textcolor[HTML]{E76BF3}{magenta}
+* **Northeastern/Eastern Europe**: \textcolor[HTML]{00BF7D}{green}
 
 
 ```{r plot pca, echo=FALSE, fig.height=7, fig.width=7, message=FALSE, warning=FALSE, eval=nrow(pca_samples)>0}
@@ -462,7 +397,6 @@ ggplot()+
   labs(shape = "Ancient Individual")
   
 ```
-\ifpca
 \newpage
 Below is a zoomed in plot of the same PCA results, focusing on Europe.
 
@@ -485,4 +419,39 @@ ggplot()+
   labs(shape = "Ancient Individual")
   
 ```
+
+```{r plot pca legend, echo=FALSE, message=FALSE, warning=FALSE, eval=nrow(pca_samples)>0}
+
+## Prepare list of populations for text
+pops_for_text <- pop_labels %>% 
+  group_by(region) %>% 
+  summarise(pops=paste(pop, collapse=", ")) %>%
+  mutate(
+    Region=case_when(
+      region == "Caucasus" ~ "Caucasus",
+      region == "NEast" ~ "Near East",
+      region == "NEEur" ~ "South Europe",
+      region == "NEur" ~ "Central/North Europe",
+      region == "SEur" ~ "Northeastern/Eastern Europe"
+    )
+  ) %>%
+  select(
+    Region,
+    Populations = pops
+  )
+  
+pops_for_text %>% 
+  kable(longtable = TRUE, format.args=list(big.mark = ',')) %>% 
+  kable_styling(latex_options = c("hold_position")) %>%
+  column_spec(., 1, width="3.5cm") %>%
+  column_spec(., 2, width="15cm") %>%
+  row_spec(1, color="#F8766D") %>%
+  row_spec(2, color="#A3A500") %>%
+  row_spec(3, color="#00B0F6") %>%
+  row_spec(4, color="#E76BF3") %>%
+  row_spec(5, color="#00BF7D")
+```
+
+\else
+No individuals pass the SNP coverage cutoff for this analysis (`r format(snp_cov_cutoff, digits = 0, big.mark = " ", decimal.mark = ",")` SNPs). A PCA for this data will be added here if/when additional sequencing data becomes available.
 \fi
