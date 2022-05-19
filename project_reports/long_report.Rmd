@@ -1,7 +1,7 @@
 ---
 output:
   pdf_document: default
-geometry: "left=2cm,right=2cm,top=2cm,bottom=2cm"
+geometry: "left=2cm,right=2cm,bottom=2cm,headheight=48pt"
 params: 
     set_subtitle: "Relic_samples"
     snp_coverage_file: "~/mount/eager_outputs/2020-05-03-relic_samples/genotyping/double_eigenstrat_coverage.txt"
@@ -11,6 +11,8 @@ params:
     poseidon_snp: "~/mount/poseidon_packages/2020-05-03-relic_samples/2020-05-03-relic_samples.snp"
     poseidon_ind: "~/mount/poseidon_packages/2020-05-03-relic_samples/2020-05-03-relic_samples.ind"
     poseidon_janno: "~/mount/forged_packages/microscope_pca/microscope_pca.janno"
+    read_results_fn: "~/mount/automated_analysis/2020-05-03-relic_samples/read/2020-05-03-relic_samples.read.txt"
+    read_plot_fn: "/Users/lamnidis/mount/automated_analysis/2020-05-03-relic_samples/read/2020-05-03-relic_samples.read.plot.pdf"
     pmmr_results_fn: "~/mount/automated_analysis/2020-05-03-relic_samples/pmmr/2020-05-03-relic_samples.pmmr.txt"
     pca_bg_annotation: "~/Software/github/Schiffels-Popgen/MICROSCOPE-processing-pipeline/project_reports/assets/bg_annotation.txt"
     evec_fn: "~/mount/automated_analysis/microscope_pca/West_Eurasian_pca.evec"
@@ -20,12 +22,15 @@ params:
 title: "Preliminary data report"
 subtitle: "`r params$set_subtitle`"
 header-includes: 
-  - \usepackage{fancyhdr}
-  - \fancyhf{}
-  - \fancypagestyle{plain}{\pagestyle{fancy}}
-  - \pagestyle{fancy}
-  - \fancyhead[R]{\includegraphics[height = 1.5cm]{/Users/lamnidis/MPI_Logo_ENG_CMYK_green.png}}
-  - \headheight 48pt
+ \usepackage{fancyhdr}
+ \fancyhf{}
+ \fancypagestyle{plain}{\pagestyle{fancy}}
+ \pagestyle{fancy}
+ \fancyhead[R]{\includegraphics[height = 1.5cm]{/Users/lamnidis/MPI_Logo_ENG_CMYK_green.png}}
+ \fancyfoot{} 
+ \cfoot{Report generated on `r params$report_date`}
+ \input{header}
+ \renewcommand{\footrulewidth}{0.4pt}
 ---
 
 \begin{center}
@@ -270,6 +275,62 @@ ggplot(sex_det) +
 
 \newpage
 
+# Genetic relationships between individuals
+```{r import_read_results, echo=FALSE}
+pull_arch_id <- function(pandora_data, IID) {
+  x <- NULL
+  for (iid in IID){
+    x <- c(x,dplyr::case_when(
+      iid %in% pandora_data$Sample ~ pandora_data %>% filter(`Sample` == iid) %>% pull(`Archaeological ID`),
+      TRUE ~ NA_character_
+    ))
+  }
+  return(x)
+}
+
+## If not enough samples pass coverage cutoffs, then the read results will not exist. Add a check.
+if (file.exists(params$read_results_fn) && file.exists(params$read_plot_fn)) {
+  read_results <- read_tsv(params$read_results_fn, col_types = 'ccdd') %>%
+    mutate(
+      IndA_ID = substr(PairIndividuals, 0,6),
+      IndB_ID = substr(PairIndividuals, 7,12),
+      IndA = pull_arch_id(pandora_data, IndA_ID),
+      IndB = pull_arch_id(pandora_data, IndB_ID)
+    ) %>%
+    select(IndA_ID, IndB_ID, IndA, IndB, Relationship, Z_upper, Z_lower) %>%
+    filter(Relationship != "Unrelated")
+    
+  show_kinship <- nrow(read_results) > 0
+  nothing_to_show <- F
+} else {
+  show_kinship <- F
+  nothing_to_show <- T
+}
+```
+\newif\ifkinship
+  \newif\ifnada
+\kinship`r ifelse(show_kinship, 'true', 'false')`
+\ifkinship
+
+The following table shows all the genetic relationships identified between the individuals presented in this report. The pair of related individuals, their respective archaeological IDs (if any), as well as the inferred genetic relationship is shown. Any pairs of individuals not in the table lack any evidence of genetic kinship to the limit of our resolution. The two final columns capture the confidence of the proposed relationship, by comparing if the proposed relationship is significantly more likely than the relationship that is further by one degree (`Z_upper`), and the relationship that is closer by one degree (`Z_lower`). ZScores below 3 are not statistically significant (p>0.01).
+
+The table is followed by a graphical representation of these results, showing the confidence around each proposed relationship as an error bar. This figure also summarises results for unrelated individuals that are not mentioned in the table.
+
+```{r print_read_table, echo=FALSE, eval=show_kinship}
+read_results %>% kable(longtable = TRUE, format.args=list(big.mark = ',')) %>% kable_styling(latex_options = c("hold_position", "repeat_header"))
+```
+![read_plot](`r params$read_plot_fn`)
+\else
+  \nada`r ifelse(nothing_to_show, 'true', 'false')`
+  \ifnada
+Not enough individuals with high enough SNP coverage are available for this analysis. Genetic kinship analysis requires a minimum of 2 individuals with sufficient SNP coverage.
+  \else
+Genetic analysis revealed no evidence of genetic kinship among the analysed individuals.
+  \fi
+\fi
+
+\newpage
+
 # Pairwise mismatch rate between individuals
 
 ```{r import pMMR, echo=FALSE, fig.height=5, fig.width=8.25, message=FALSE}
@@ -338,6 +399,11 @@ pca_evec <- readr::read_fwf(params$evec_fn,
                           col_select=c("ind","pc1","pc2","pop"), col_types='cddc'
                           )
 
+## Prepare list of populations for text
+pops_for_text <- pop_labels %>% 
+  group_by(region) %>% 
+  summarise(pops=paste(pop, collapse=", "), n=n())
+  
 bg_plot_data <- inner_join(pca_evec, pop_labels, by="pop")
 pca_samples <- pca_evec %>% filter(ind %in% good_cov_inds)
 
@@ -365,11 +431,11 @@ The following plot shows how ancient individuals  with sufficient genomic covera
 
 The colour used in the plotting of present-day individuals indicates rough geographic regions, as follows:
 
-* **Caucasus**: \textcolor[HTML]{F8766D}{red}
-* **Near East**: \textcolor[HTML]{A3A500}{olive}
-* **South Europe**: \textcolor[HTML]{00B0F6}{light blue}
-* **Central/North Europe**: \textcolor[HTML]{E76BF3}{magenta}
-* **Northeaster/Eastern Europe**: \textcolor[HTML]{00BF7D}{green}
+* **Caucasus**: \textcolor[HTML]{F8766D}{red} (`r pops_for_text[pops_for_text$region == "Caucasus",2]`)
+* **Near East**: \textcolor[HTML]{A3A500}{olive} (`r pops_for_text[pops_for_text$region == "NEast",2]`)
+* **South Europe**: \textcolor[HTML]{00B0F6}{light blue} (`r pops_for_text[pops_for_text$region == "SEur",2]`)
+* **Central/North Europe**: \textcolor[HTML]{E76BF3}{magenta} (`r pops_for_text[pops_for_text$region == "NEur",2]`)
+* **Northeastern/Eastern Europe**: \textcolor[HTML]{00BF7D}{green} (`r pops_for_text[pops_for_text$region == "NEEur",2]`)
 
 \else
 No individuals pass the SNP coverage cutoff for this analysis (`r format(snp_cov_cutoff, digits = 0, big.mark = " ", decimal.mark = ",")` SNPs). A PCA for this data will be added here if/when additional sequencing data becomes available.
@@ -396,3 +462,27 @@ ggplot()+
   labs(shape = "Ancient Individual")
   
 ```
+\ifpca
+\newpage
+Below is a zoomed in plot of the same PCA results, focusing on Europe.
+
+```{r plot zoomed pca, echo=FALSE, fig.height=7, fig.width=7, message=FALSE, warning=FALSE, eval=nrow(pca_samples)>0}
+ggplot()+
+  coord_equal(xlim=c(-0.05,0.03), ylim=c(-0.06,0.02)) +
+  geom_text(data=bg_plot_data, aes(x=pc1, y=pc2, label=label, col=factor(colour)), alpha=0.4, size=2, show.legend=F) +
+  theme_minimal() +
+  geom_point(data=pca_samples, aes(x=pc1, y=pc2, alpha=n_snps)) +
+  geom_text_repel(data=pca_samples, aes(x=pc1, y=pc2, label=ind), max.overlaps = Inf, size=2.5) +
+  scale_alpha_continuous(
+    range=c(0.2,1), 
+    limits=c(snp_cov_cutoff, 80000), 
+    labels=function(x) {paste0("at least ", format(x, digits = 0, big.mark = " ", scientific = F)," SNPs")}, 
+    name="SNP Coverage"
+    ) +
+  # geom_point(data=pca_samples, aes(x=pc1, y=pc2, shape=ind)) +
+  xlab(paste0("PC1 (",round((pca_eval$eigenvalues[1]/sum(pca_eval$eigenvalues))*100,digits=3),"%)")) +
+  ylab(paste0("PC2 (",round((pca_eval$eigenvalues[2]/sum(pca_eval$eigenvalues))*100,digits=3),"%)")) +
+  labs(shape = "Ancient Individual")
+  
+```
+\fi
