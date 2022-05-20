@@ -69,10 +69,15 @@ for idx in ${!finished_runs[@]}; do
         stats_table="$(dirname ${finished_runs[${idx}]})/multiqc_data/multiqc_general_stats.txt"
         ## pMMR results have stable paths based on batch Id
         pmmr_fn=${base_analysis_dir}/${batch_Id}/pmmr/${batch_Id}.pmmr.txt
+        ## Read results have stable paths
+        read_txt=${base_analysis_dir}/${batch_Id}/read/${batch_Id}.read.txt
+        read_pdf=${base_analysis_dir}/${batch_Id}/read/${batch_Id}.read.plot.pdf
         ## Required Poseidon package paths have stable path derived from the batch Id
         geno_fn=${base_poseidon_package_dir}/${batch_Id}/${batch_Id}.geno
         snp_fn=${base_poseidon_package_dir}/${batch_Id}/${batch_Id}.snp
         ind_fn=${base_poseidon_package_dir}/${batch_Id}/${batch_Id}.ind
+        ## Get report creation date
+        report_date=$(date +%d-%m-%Y)
         echo "Creating long report for ${batch_Id} -> ${expected_outputs[${idx}]}"
         ${report_knitter} \
             --report_template ${report_template} \
@@ -82,6 +87,8 @@ for idx in ${!finished_runs[@]}; do
             --batch_name ${batch_name} \
             --cred_file ${cred_file} \
             --pmmr_results ${pmmr_fn} \
+            --read_txt ${read_txt} \
+            --read_pdf ${read_pdf} \
             --janno_fn ${janno_fn} \
             --GenoFile ${geno_fn} \
             --SnpFile ${snp_fn} \
@@ -89,7 +96,8 @@ for idx in ${!finished_runs[@]}; do
             --bg_annotation_file ${bg_annotation_fn} \
             --evec_fn ${evec_fn} \
             --eval_fn ${eval_fn} \
-            --output_pdf_name ${expected_outputs[${idx}]}
+            --output_pdf_name ${expected_outputs[${idx}]} \
+            --report_date ${report_date}
     # exit 0 ## For Testing
     elif [[ ${evec_fn} -ot ${finished_runs[${idx}]} ]]; then
         ## Error message when the PCA results are outdated.

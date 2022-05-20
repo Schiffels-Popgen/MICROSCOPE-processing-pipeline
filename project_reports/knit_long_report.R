@@ -13,26 +13,32 @@ make_title <- function(x) {
 ## Parse arguments ----------------------------
 parser <- OptionParser(usage = "%prog -r long_report.Rmd -c .credentials -o output.pdf -s snp_coverage.txt -d sexdet.txt -t stats_table.tsv -p pMMR.out.txt -j package.janno -G package.geno -S package.snp -I package.ind -b my_batch_name -a annotation.txt -D distance.mdist -i distance.mdist.id")
 parser <- add_option(parser, c("-r", "--report_template"), type = 'character', 
-                     action = "store", dest = "template", 
-                     help = "Path to the report template Rmd.")
+                    action = "store", dest = "template", 
+                    help = "Path to the report template Rmd.")
 parser <- add_option(parser, c("-c", "--cred_file"), type = 'character',
-                     action = "store", dest = "cred_file", 
-                     help = "The pandora credentials file.")
+                    action = "store", dest = "cred_file", 
+                    help = "The pandora credentials file.")
 parser <- add_option(parser, c("-o", "--output_pdf_name"), type = 'character',
-                     action = "store", dest = "output_name", 
-                     help = "The name of the output .pdf report.")
+                    action = "store", dest = "output_name", 
+                    help = "The name of the output .pdf report.")
 parser <- add_option(parser, c("-s", "--snp_coverage_file"), type = 'character',
-                     action = "store", dest = "snp_coverage_file",
-                     help = "The path to the eigenstrat snp coverage file.")
+                    action = "store", dest = "snp_coverage_file",
+                    help = "The path to the eigenstrat snp coverage file.")
 parser <- add_option(parser, c("-d", "--sex_det_file"), type = 'character',
-                     action = "store", dest = "sex_det_file",
-                     help = "The path to the sex determination output file.")
+                    action = "store", dest = "sex_det_file",
+                    help = "The path to the sex determination output file.")
 parser <- add_option(parser, c("-t", "--stats_table"), type = 'character',
-                     action = "store", dest = "stats_table",
-                     help = "The path to the multiqc general stats table file.")
+                    action = "store", dest = "stats_table",
+                    help = "The path to the multiqc general stats table file.")
 parser <- add_option(parser, c("-p", "--pmmr_results"), type = 'character',
                     action = "store", dest = "pmmr_fn",
                     help = "The path to the pMMR results file.")
+parser <- add_option(parser, c("-T", "--read_txt"), type = 'character',
+                    action = "store", dest = "read_txt",
+                    help = "The path to the READ results file.")
+parser <- add_option(parser, c("-P", "--read_pdf"), type = 'character',
+                    action = "store", dest = "read_pdf",
+                    help = "The path to the READ output pdf.")
 parser <- add_option(parser, c("-j", "--janno_fn"), type = 'character',
                     action = "store", dest = "janno_fn",
                     help = "The path to the forged meta-package janno file.")
@@ -46,8 +52,8 @@ parser <- add_option(parser, c("-I", "--IndFile"), type = 'character',
                     action = "store", dest = "ind_fn",
                     help = "The path to the package eigenstrat .ind file.")
 parser <- add_option(parser, c("-b", "--batch_name"), type = 'character',
-                     action = "store", dest = "batch_name",
-                     help = "The name of the batch, to be capitalised and used as a subtitle for the report.")
+                    action = "store", dest = "batch_name",
+                    help = "The name of the batch, to be capitalised and used as a subtitle for the report.")
 parser <- add_option(parser, c("-a", "--bg_annotation_file"), type = 'character',
                     action = "store", dest = "bg_annotation_fn",
                     help = "The path to the file with the annotation info for the PCA background.")
@@ -57,6 +63,9 @@ parser <- add_option(parser, c("-E", "--evec_fn"), type = 'character',
 parser <- add_option(parser, c("-e", "--eval_fn"), type = 'character',
                     action = "store", dest = "eval_fn",
                     help = "Path to the PCA eigenvalue file.")
+parser <- add_option(parser, c("-D", "--report_date"), type = 'character',
+                    action = "store", dest = "report_date",
+                    help = "The date of the report generation.")
 arguments <- parse_args(parser)
 
 opts <- arguments
@@ -83,10 +92,13 @@ render(reportTemplate,
         poseidon_snp = opts$snp_fn,
         poseidon_ind = opts$ind_fn,
         poseidon_janno = opts$janno_fn,
+        read_results_fn = opts$read_txt,
+        read_plot_fn = opts$read_pdf,
         pmmr_results_fn = opts$pmmr_fn,
         pca_bg_annotation = opts$bg_annotation_fn,
         eval_fn = opts$eval_fn,
-        evec_fn = opts$evec_fn
+        evec_fn = opts$evec_fn,
+        report_date = opts$report_date
         ),
     output_file = opts$output_name,
     output_dir = dirname(opts$output_name)
