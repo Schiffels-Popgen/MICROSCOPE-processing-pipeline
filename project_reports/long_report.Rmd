@@ -155,15 +155,17 @@ The table below contains some descriptive statistics on the sequencing data. The
 
 * **Sequenced Reads**: The total number of DNA fragments that were sequenced.
 * **Mapped Reads**: The number of human DNA fragments.
-* **Endogenous DNA (%)**: The percent of the 'Sequenced Reads' that are identified as human DNA.
+* **Endogenous DNA (%)**: The percent of the 'Sequenced Reads' that are identified as human DNA. 
 * **% of Sequence Duplication**: The percent of 'Mapped Reads' that are laboratory duplicates of other DNA fragments
 * **Damage 1st bp 5'**: The proportion of DNA fragments that show evidence of DNA damage on the 1st base pair (bp) of the 5' end of the DNA molecule.
 
-The proportion of Endogenous DNA is a measure of human DNA preservation.
+The proportion of Endogenous DNA is a measure of human DNA preservation. Libraries with less than 0.1% Endogenous DNA are not processed further. Those libraries that pass this threshold are either sequenced deeper or undergo in-solution capture.  
 
 A high percent of sequence duplication indicates that we have sequenced most of the unique DNA fragments in the DNA library, meaning that any further sequencing would provide diminishing returns.
 
-The presence of DNA damage helps confirm that the DNA in a sequenced library is in fact ancient. Libraries with low proportion of DNA damage (Damage 1st bp 5\') and high endogenous DNA are potentially contaminated with present-day DNA molecules.
+The presence of DNA damage helps confirm that the DNA in a sequenced library is in fact ancient. Given the library preparation protocol used in MPI-EVA, for iron-age material from Europe we generally expect to see roughly 8-10% of DNA damage on the 1st bp of the 5\' end of the DNA molecules. This value can vary considerably based on the specific burial conditions in each site.
+
+Libraries with low proportion of DNA damage (Damage 1st bp 5\') and high endogenous DNA are potentially contaminated with present-day DNA molecules. 
 
 ```{r load_general_stats, echo=FALSE, message=FALSE}
 library_info <- read_tsv(params$stats_table) %>%
@@ -377,6 +379,8 @@ The colour used in the plotting of present-day individuals indicates rough geogr
 * **Central/North Europe**: \textcolor[HTML]{E76BF3}{magenta}
 * **Northeastern/Eastern Europe**: \textcolor[HTML]{00BF7D}{green}
 
+In the next page you will find a zoomed-in plot of the same PCA results, focusing on Europe, as well as a table listing all the populations in each of the five geographic regions listed above.
+
 
 ```{r plot pca, echo=FALSE, fig.height=7, fig.width=7, message=FALSE, warning=FALSE, eval=nrow(pca_samples)>0}
 ggplot()+
@@ -398,8 +402,6 @@ ggplot()+
   
 ```
 \newpage
-Below is a zoomed in plot of the same PCA results, focusing on Europe.
-
 ```{r plot zoomed pca, echo=FALSE, fig.height=7, fig.width=7, message=FALSE, warning=FALSE, eval=nrow(pca_samples)>0}
 ggplot()+
   coord_equal(xlim=c(-0.05,0.03), ylim=c(-0.06,0.02)) +
@@ -444,7 +446,7 @@ pops_for_text %>%
   kable(longtable = TRUE, format.args=list(big.mark = ',')) %>% 
   kable_styling(latex_options = c("hold_position")) %>%
   column_spec(., 1, width="3.5cm") %>%
-  column_spec(., 2, width="15cm") %>%
+  column_spec(., 2, width="13cm") %>%
   row_spec(1, color="#F8766D") %>%
   row_spec(2, color="#A3A500") %>%
   row_spec(3, color="#00B0F6") %>%
