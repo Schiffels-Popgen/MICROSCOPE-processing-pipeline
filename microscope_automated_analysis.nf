@@ -69,7 +69,7 @@ process pmmrCalculator {
 }
 
 process forge_package {
-    conda 'bioconda::poseidon-trident>=0.26.1'
+    conda 'bioconda::poseidon-trident=0.26.1'
     memory '1GB'
     cpus 1
     
@@ -77,7 +77,7 @@ process forge_package {
     
     // Dummy output to run this before attempting to run smartpca, which fails the job.
     output:
-    val "dummy" into ch_dummy_for_pca_dependency
+    val "dummy" into ch_dummy_for_pca_dependency_eurasia,ch_dummy_for_pca_dependency_europe
 
     script:
     """
@@ -86,7 +86,7 @@ process forge_package {
 }
 
 // Create channel with microscope PCA bed/bim/fam for PCA run
-ch_for_smartpca = Channel.fromPath("/mnt/archgen/MICROSCOPE/forged_packages/microscope_pca/*.{geno,snp,ind}")
+Channel.fromPath("/mnt/archgen/MICROSCOPE/forged_packages/microscope_pca/*.{geno,snp,ind}")
     .toSortedList()
     .map {
         it ->
@@ -96,16 +96,17 @@ ch_for_smartpca = Channel.fromPath("/mnt/archgen/MICROSCOPE/forged_packages/micr
 
         [geno, snp, ind]
         }
+    .into{ ch_for_smartpca_europe; ch_for_smartpca_eurasia }
 
-process microscope_pca {
+process microscope_pca_eurasia {
     conda 'bioconda::eigensoft=7.2.1'
     publishDir "/mnt/archgen/MICROSCOPE/automated_analysis/microscope_pca/", mode: 'copy'
     memory '16GB'
     cpus 4
 
     input:
-    tuple path(geno), path(snp), path(ind) from ch_for_smartpca.dump()
-    val dummy from ch_dummy_for_pca_dependency
+    tuple path(geno), path(snp), path(ind) from ch_for_smartpca_eurasia.dump()
+    val dummy from ch_dummy_for_pca_dependency_eurasia
 
     output:
     file 'West_Eurasian_pca.evec' optional true
@@ -114,7 +115,28 @@ process microscope_pca {
 
     script:
     """
-    ${projectDir}/plink_mds/run_smartpca.sh ${geno} ${snp} ${ind} ${projectDir}/plink_mds/west_eurasian_poplist.txt ${task.cpus}
+    ${projectDir}/plink_mds/run_smartpca.sh ${geno} ${snp} ${ind} ${projectDir}/plink_mds/west_eurasian_poplist.txt ${task.cpus} West_Eurasian_pca
+    """
+}
+
+process microscope_pca_europe {
+    conda 'bioconda::eigensoft=7.2.1'
+    publishDir "/mnt/archgen/MICROSCOPE/automated_analysis/microscope_pca/", mode: 'copy'
+    memory '16GB'
+    cpus 4
+
+    input:
+    tuple path(geno), path(snp), path(ind) from ch_for_smartpca_europe.dump()
+    val dummy from ch_dummy_for_pca_dependency_europe
+
+    output:
+    file 'Europe_only_pca.eval' optional true
+    file 'Europe_only_pca.evec' optional true
+    file 'Europe_only_pca.weights' optional true
+
+    script:
+    """
+    ${projectDir}/plink_mds/run_smartpca.sh ${geno} ${snp} ${ind} ${projectDir}/plink_mds/europe_poplist.txt ${task.cpus} Europe_only_pca
     """
 }
 
