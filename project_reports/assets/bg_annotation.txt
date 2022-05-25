@@ -48,7 +48,6 @@ Lezgin	Lez	Caucasus	1
 Lithuanian	Lth	NEEur	3
 Maltese	Mlt	SEur	4
 Mordovian	Mor	NEEur	3
-North_Ossetian	NOs	Caucasus	1
 Norwegian	Nrw	NEur	5
 Orcadian	Orc	NEur	5
 Palestinian	Pal	NEast	2
