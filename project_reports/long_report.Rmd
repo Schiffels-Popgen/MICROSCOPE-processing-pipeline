@@ -15,8 +15,10 @@ params:
     read_plot_fn: "/Users/lamnidis/mount/automated_analysis/2020-05-03-relic_samples/read/2020-05-03-relic_samples.read.plot.pdf"
     pmmr_results_fn: "~/mount/automated_analysis/2020-05-03-relic_samples/pmmr/2020-05-03-relic_samples.pmmr.txt"
     pca_bg_annotation: "~/Software/github/Schiffels-Popgen/MICROSCOPE-processing-pipeline/project_reports/assets/bg_annotation.txt"
-    evec_fn: "~/mount/automated_analysis/microscope_pca/West_Eurasian_pca.evec"
-    eval_fn: "~/mount/automated_analysis/microscope_pca/West_Eurasian_pca.eval"
+    we_evec_fn: "~/mount/automated_analysis/microscope_pca/West_Eurasian_pca.evec"
+    we_eval_fn: "~/mount/automated_analysis/microscope_pca/West_Eurasian_pca.eval"
+    eu_evec_fn: "~/mount/automated_analysis/microscope_pca/Europe_only_pca.evec"
+    eu_eval_fn: "~/mount/automated_analysis/microscope_pca/Europe_only_pca.eval"
     cred_file: "~/Software/github/Schiffels-Popgen/MICROSCOPE-processing-pipeline/.credentials"
     report_date: "18-05-2022"
 title: "Preliminary data report"
@@ -83,10 +85,10 @@ xy_xmax <- 0.6
 xy_ymin <- 0.3
 xy_ymax <- 0.6
 
-sex_cutoffs <- tibble("Expected ranges"=c("XX", "XY"), 
-                      xmin=c(xx_xmin, xy_xmin), 
-                      xmax=c(xx_xmax, xy_xmax), 
-                      ymin=c(xx_ymin, xy_ymin), 
+sex_cutoffs <- tibble("Expected ranges"=c("XX", "XY"),
+                      xmin=c(xx_xmin, xy_xmin),
+                      xmax=c(xx_xmax, xy_xmax),
+                      ymin=c(xx_ymin, xy_ymin),
                       ymax=c(xx_ymax, xy_ymax))
 
 ## Function to infer genetic sex from x/y rates
@@ -95,13 +97,13 @@ infer_sex <- function(sex_det, sex_cutoffs){
   limits <- sex_cutoffs %>% tibble::column_to_rownames(var="Expected ranges") %>% as.matrix()
   sex_det <- sex_det %>%
     mutate("Genetic Sex" = ifelse(
-      `x-rate` > limits["XX","xmin"] & 
-        `x-rate` < limits["XX","xmax"] & 
-        `y-rate` > limits["XX","ymin"] & 
+      `x-rate` > limits["XX","xmin"] &
+        `x-rate` < limits["XX","xmax"] &
+        `y-rate` > limits["XX","ymin"] &
         `y-rate` < limits["XX","ymax"], "F",
-      ifelse(`x-rate` > limits["XY","xmin"] & 
-               `x-rate` < limits["XY","xmax"] & 
-               `y-rate` > limits["XY","ymin"] & 
+      ifelse(`x-rate` > limits["XY","xmin"] &
+               `x-rate` < limits["XY","xmax"] &
+               `y-rate` > limits["XY","ymin"] &
                `y-rate` < limits["XY","ymax"], "M",
              "Unknown"))) %>%
     select(`Sample`, `Genetic Sex`)
@@ -128,11 +130,11 @@ infer_sex <- function(sex_det, sex_cutoffs){
 The following report summarises the preliminary archaeogenetic results for individuals from the following sites:
 ```{r echo=FALSE}
 con <- get_pandora_connection(params$cred_file)
-dataset_inds <- read_tsv(params$poseidon_ind, col_names=c("Ind","Sex","Site_Id"), col_types='ccc') %>% 
-  group_by(Site_Id) %>% 
+dataset_inds <- read_tsv(params$poseidon_ind, col_names=c("Ind","Sex","Site_Id"), col_types='ccc') %>%
+  group_by(Site_Id) %>%
   summarise(.groups='keep', "Number of Individuals"=n())
 
-site_info <- get_df("TAB_Site", con) %>% 
+site_info <- get_df("TAB_Site", con) %>%
   filter(`site.Full_Site_Id` %in% dataset_inds$Site_Id) %>%
   select(`site.Full_Site_Id`, `site.Name`, `site.Longitude`, `site.Latitude`)
 site_table <- full_join(site_info, dataset_inds, by=c("site.Full_Site_Id"="Site_Id")) %>%
@@ -141,7 +143,7 @@ site_table <- full_join(site_info, dataset_inds, by=c("site.Full_Site_Id"="Site_
     Name = site.Name,
     Longitude = site.Longitude,
     Latitude = site.Latitude
-  ) 
+  )
 site_table %>%
   kable(longtable = T, format.args=list(big.mark = ',', digits=3))  %>%
   kable_styling(full_width=F, latex_options=c("hold_position", "repeat_header"))
@@ -169,8 +171,8 @@ Libraries with low proportion of DNA damage (Damage 1st bp 5\') and high endogen
 
 ```{r load_general_stats, echo=FALSE, message=FALSE}
 library_info <- read_tsv(params$stats_table) %>%
-  filter(!grepl("_S0_",Sample)) %>% 
-  filter(grepl("TF|SG",Sample)) %>% 
+  filter(!grepl("_S0_",Sample)) %>%
+  filter(grepl("TF|SG",Sample)) %>%
   select(Sample,
     "Sequenced Reads"=`Samtools Flagstat (pre-samtools filter)_mqc-generalstats-samtools_flagstat_pre_samtools_filter-flagstat_total`,
     "Mapped Reads" = `Samtools Flagstat (pre-samtools filter)_mqc-generalstats-samtools_flagstat_pre_samtools_filter-mapped_passed`,
@@ -196,7 +198,7 @@ Individuals that have too few covered SNPs (< `r format(snp_cov_cutoff, digits =
 
 ```{r gather snp coverage data, echo=FALSE, message=FALSE}
 ## Load and parse coverage stats
-snp_cov<-read_tsv(params$snp_coverage_file, col_names=c("#Sample", "#SNPs_Covered", "#SNPs_Total"), col_types='cii', skip=1) %>% 
+snp_cov<-read_tsv(params$snp_coverage_file, col_names=c("#Sample", "#SNPs_Covered", "#SNPs_Total"), col_types='cii', skip=1) %>%
   rename("Sample"="#Sample","# SNPs Covered" = "#SNPs_Covered", "Out of a maximum of" = "#SNPs_Total") %>%
   arrange(Sample) ## Sort by individual ID so bad_cov gets the correct indices for highlighting in the table.
 
@@ -209,7 +211,7 @@ good_cov_inds <- snp_cov$Sample[which(snp_cov$`# SNPs Covered` >= snp_cov_cutoff
 ```{r gather sexdet data, message=FALSE, include=FALSE}
 ## Set up filter string to only keep sexdet from the strandedness of interest
 keep_only <- ifelse(
-    str_detect(basename(params$snp_coverage_file), "double"), 
+    str_detect(basename(params$snp_coverage_file), "double"),
     "doublestrand",
     "singlestrand"
     )
@@ -224,7 +226,7 @@ sex_det <- read_tsv(params$sex_det_file, col_names=c("#Sample", "#SnpsAut", "#SN
 
 ```{r arch_IDs from pandora, message=FALSE, include=FALSE}
 ## Load ArchIDs from pandora using sidora
-pandora_data <- get_df("TAB_Individual", con) %>% 
+pandora_data <- get_df("TAB_Individual", con) %>%
   filter(`individual.Full_Individual_Id` %in% sex_det$Sample) %>%
   select(`individual.Full_Individual_Id`, `individual.Archaeological_ID`) %>%
   rename("Sample" = `individual.Full_Individual_Id`, "Archaeological ID" = `individual.Archaeological_ID`)
@@ -263,15 +265,15 @@ ggplot(sex_det) +
   geom_text_repel(aes(label=Sample, x=x, y=y), max.overlaps = 50, size=2) +
   scale_alpha(range=c(0.3,1), labels=function(x) {format(x, big.mark = ",", decimal.mark = ".", scientific = F)}) +
   theme_classic() +
-  theme(legend.position = 'bottom', 
-        legend.direction="horizontal", 
-        legend.margin=margin(r=20,l=20), 
+  theme(legend.position = 'bottom',
+        legend.direction="horizontal",
+        legend.margin=margin(r=20,l=20),
         legend.box='vertical'
         ) +
   xlab("Relative coverage on the X chromosome") +
   ylab("Relative coverage on the Y chromosome") +
   ggtitle("Genetic sex determination plot") +
-  coord_cartesian(xlim=c(0,1.2), ylim=c(0,0.8)) + 
+  coord_cartesian(xlim=c(0,1.2), ylim=c(0,0.8)) +
   expand_limits(x=c(0,1.2),y=c(0,0.8))
 ```
 
@@ -333,15 +335,15 @@ Genetic analysis revealed no evidence of genetic kinship among the analysed indi
 
 \newpage
 
-# Principal component analysis
+# Principal component analysis with West Eurasian populations
 ```{r import PCA data, echo=FALSE, message=FALSE, warning=FALSE}
 pop_labels <- read_tsv(params$pca_bg_annotation, col_names = c("pop","label","region","colour"), col_types='ccci')
-pca_evec <- readr::read_fwf(params$evec_fn, 
+pca_evec <- readr::read_fwf(params$we_evec_fn,
                           fwf_widths(
                             c(21,11,rep(12,times=9),17),
                               col_names=c("ind","pc1","pc2","pc3","pc4","pc5","pc6","pc7","pc8","pc9","pc10","pop")
-                            ), 
-                          skip=1, 
+                            ),
+                          skip=1,
                           trim_ws=T,
                           col_select=c("ind","pc1","pc2","pop"), col_types='cddc'
                           )
@@ -349,7 +351,7 @@ pca_evec <- readr::read_fwf(params$evec_fn,
 bg_plot_data <- inner_join(pca_evec, pop_labels, by="pop")
 pca_samples <- pca_evec %>% filter(ind %in% good_cov_inds)
 
-pca_eval <- read_tsv(params$eval_fn, col_names = "eigenvalues", col_types='d')
+pca_eval <- read_tsv(params$we_eval_fn, col_names = "eigenvalues", col_types='d')
 
 pca_samples <- pca_samples %>% left_join(snp_cov, by=c("ind"="Sample")) %>% select(ind,pc1,pc2,pop, n_snps=`# SNPs Covered`)
 
@@ -383,18 +385,25 @@ In the next page you will find a zoomed-in plot of the same PCA results, focusin
 
 
 ```{r plot pca, echo=FALSE, fig.height=7, fig.width=7, message=FALSE, warning=FALSE, eval=nrow(pca_samples)>0}
-ggplot()+
+ggplot() +
   coord_equal() +
   geom_text(data=bg_plot_data, aes(x=pc1, y=pc2, label=label, col=factor(colour)), alpha=0.4, size=2, show.legend=F) +
   theme_minimal() +
   geom_point(data=pca_samples, aes(x=pc1, y=pc2, alpha=n_snps)) +
   geom_text_repel(data=pca_samples, aes(x=pc1, y=pc2, label=ind), max.overlaps = Inf, size=2.5) +
   scale_alpha_continuous(
-    range=c(0.2,1), 
-    limits=c(snp_cov_cutoff, 80000), 
-    labels=function(x) {paste0("at least ", format(x, digits = 0, big.mark = " ", scientific = F)," SNPs")}, 
+    range=c(0.2,1),
+    limits=c(snp_cov_cutoff, 80000),
+    labels=function(x) {paste0("at least ", format(x, digits = 0, big.mark = " ", scientific = F)," SNPs")},
     name="SNP Coverage"
     ) +
+  scale_color_manual(values=c(
+    "1" = "#F8766D",
+    "2" = "#A3A500",
+    "3" = "#00BF7D",
+    "4" = "#00B0F6",
+    "5" = "#E76BF3"
+    )) +
   # geom_point(data=pca_samples, aes(x=pc1, y=pc2, shape=ind)) +
   xlab(paste0("PC1 (",round((pca_eval$eigenvalues[1]/sum(pca_eval$eigenvalues))*100,digits=3),"%)")) +
   ylab(paste0("PC2 (",round((pca_eval$eigenvalues[2]/sum(pca_eval$eigenvalues))*100,digits=3),"%)")) +
@@ -403,18 +412,25 @@ ggplot()+
 ```
 \newpage
 ```{r plot zoomed pca, echo=FALSE, fig.height=7, fig.width=7, message=FALSE, warning=FALSE, eval=nrow(pca_samples)>0}
-ggplot()+
+ggplot() +
   coord_equal(xlim=c(-0.05,0.03), ylim=c(-0.06,0.02)) +
   geom_text(data=bg_plot_data, aes(x=pc1, y=pc2, label=label, col=factor(colour)), alpha=0.4, size=2, show.legend=F) +
   theme_minimal() +
   geom_point(data=pca_samples, aes(x=pc1, y=pc2, alpha=n_snps)) +
   geom_text_repel(data=pca_samples, aes(x=pc1, y=pc2, label=ind), max.overlaps = Inf, size=2.5) +
   scale_alpha_continuous(
-    range=c(0.2,1), 
-    limits=c(snp_cov_cutoff, 80000), 
-    labels=function(x) {paste0("at least ", format(x, digits = 0, big.mark = " ", scientific = F)," SNPs")}, 
+    range=c(0.2,1),
+    limits=c(snp_cov_cutoff, 80000),
+    labels=function(x) {paste0("at least ", format(x, digits = 0, big.mark = " ", scientific = F)," SNPs")},
     name="SNP Coverage"
     ) +
+    scale_color_manual(values=c(
+    "1" = "#F8766D",
+    "2" = "#A3A500",
+    "3" = "#00BF7D",
+    "4" = "#00B0F6",
+    "5" = "#E76BF3"
+    )) +
   # geom_point(data=pca_samples, aes(x=pc1, y=pc2, shape=ind)) +
   xlab(paste0("PC1 (",round((pca_eval$eigenvalues[1]/sum(pca_eval$eigenvalues))*100,digits=3),"%)")) +
   ylab(paste0("PC2 (",round((pca_eval$eigenvalues[2]/sum(pca_eval$eigenvalues))*100,digits=3),"%)")) +
@@ -425,16 +441,16 @@ ggplot()+
 ```{r plot pca legend, echo=FALSE, message=FALSE, warning=FALSE, eval=nrow(pca_samples)>0}
 
 ## Prepare list of populations for text
-pops_for_text <- pop_labels %>% 
-  group_by(region) %>% 
+pops_for_text <- pop_labels %>%
+  group_by(region) %>%
   summarise(pops=paste(pop, collapse=", ")) %>%
   mutate(
     Region=case_when(
       region == "Caucasus" ~ "Caucasus",
       region == "NEast" ~ "Near East",
-      region == "NEEur" ~ "South Europe",
+      region == "NEEur" ~ "Northeastern/Eastern Europe",
       region == "NEur" ~ "Central/North Europe",
-      region == "SEur" ~ "Northeastern/Eastern Europe"
+      region == "SEur" ~ "South Europe"
     )
   ) %>%
   select(
@@ -442,18 +458,121 @@ pops_for_text <- pop_labels %>%
     Populations = pops
   )
   
-pops_for_text %>% 
-  kable(longtable = TRUE, format.args=list(big.mark = ',')) %>% 
+pops_for_text %>%
+  kable(longtable = TRUE, format.args=list(big.mark = ',')) %>%
   kable_styling(latex_options = c("hold_position")) %>%
   column_spec(., 1, width="3.5cm") %>%
   column_spec(., 2, width="13cm") %>%
   row_spec(1, color="#F8766D") %>%
   row_spec(2, color="#A3A500") %>%
-  row_spec(3, color="#00B0F6") %>%
+  row_spec(3, color="#00BF7D") %>%
   row_spec(4, color="#E76BF3") %>%
-  row_spec(5, color="#00BF7D")
+  row_spec(5, color="#00B0F6")
 ```
 
+\newpage
+# Principal component analysis with European populations
+
+The following plot shows how ancient individuals  with sufficient genomic coverage (in black) relate to present-day European populations. The distance between individuals roughly correlates with genetic distances. The percent of genetic variation explained by each axis is shown in parentheses.
+
+The colour used in the plotting of present-day individuals indicates rough geographic regions, as follows:
+
+* **South Europe**: \textcolor[HTML]{00B0F6}{light blue}
+* **Central/North Europe**: \textcolor[HTML]{E76BF3}{magenta}
+* **Northeastern/Eastern Europe**: \textcolor[HTML]{00BF7D}{green}
+
+Below the plot you will also find a table listing all the populations in each of the three geographic regions listed above. The populations in each region are almost identical to the last plot, except the "Chuvash" population has been removed from the "Northeastern/Eastern Europe" region.
+
+```{r import PCA2 data, echo=FALSE, message=FALSE, warning=FALSE, eval=nrow(pca_samples)>0}
+eu_pop_labels <- read_tsv(params$pca_bg_annotation, col_names = c("pop","label","region","colour"), col_types='ccci') %>%
+  filter(region %in% c("NEEur", "SEur", "NEur"), pop != "Chuvash")
+eu_pca_evec <- readr::read_fwf(params$eu_evec_fn,
+                          fwf_widths(
+                            c(21,11,rep(12,times=9),17),
+                              col_names=c("ind","pc1","pc2","pc3","pc4","pc5","pc6","pc7","pc8","pc9","pc10","pop")
+                            ),
+                          skip=1,
+                          trim_ws=T,
+                          col_select=c("ind","pc1","pc2","pop"), col_types='cddc'
+                          )
+
+eu_bg_plot_data <- inner_join(eu_pca_evec, eu_pop_labels, by="pop")
+eu_pca_samples <- eu_pca_evec %>% filter(ind %in% good_cov_inds)
+
+eu_pca_eval <- read_tsv(params$eu_eval_fn, col_names = "eigenvalues", col_types='d')
+
+eu_pca_samples <- eu_pca_samples %>% left_join(snp_cov, by=c("ind"="Sample")) %>% select(ind,pc1,pc2,pop, n_snps=`# SNPs Covered`)
+
+## Infer PC orientation and flip if necessary
+Cypriot_ind <- eu_bg_plot_data %>% filter(ind == "CYP19")
+Lithuanian_ind <- eu_bg_plot_data %>% filter(ind == "lithuania10")
+if (Cypriot_ind$pc1 > Lithuanian_ind$pc1) {
+  eu_bg_plot_data <- eu_bg_plot_data %>% mutate(pc1 = -pc1)
+  eu_pca_samples <- eu_pca_samples %>% mutate(pc1 = -pc1)
+}
+if (Cypriot_ind$pc2 < Lithuanian_ind$pc2) {
+  eu_bg_plot_data <- eu_bg_plot_data %>% mutate(pc2 = -pc2)
+  eu_pca_samples <- eu_pca_samples %>% mutate(pc2 = -pc2)
+}
+```
+
+```{r plot pca2, echo=FALSE, fig.height=7, fig.width=7, message=FALSE, warning=FALSE, eval=nrow(pca_samples)>0}
+ggplot() +
+  coord_equal() +
+  geom_text(data=eu_bg_plot_data, aes(x=pc2, y=pc1, label=label, col=factor(colour)), alpha=0.4, size=2, show.legend=F) +
+  theme_minimal() +
+  geom_point(data=eu_pca_samples, aes(x=pc2, y=pc1, alpha=n_snps)) +
+  geom_text_repel(data=eu_pca_samples, aes(x=pc2, y=pc1, label=ind), max.overlaps = Inf, size=2.5) +
+  scale_alpha_continuous(
+    range=c(0.2,1),
+    limits=c(snp_cov_cutoff, 80000),
+    labels=function(x) {paste0("at least ", format(x, digits = 0, big.mark = " ", scientific = F)," SNPs")},
+    name="SNP Coverage"
+    ) +
+    scale_color_manual(values=c(
+    "1" = "#F8766D",
+    "2" = "#A3A500",
+    "3" = "#00BF7D",
+    "4" = "#00B0F6",
+    "5" = "#E76BF3"
+    )) +
+  # geom_point(data=pca_samples, aes((x=pc2, y=pc1, shape=ind)) +
+  ylab(paste0("PC1 (",round((eu_pca_eval$eigenvalues[1]/sum(eu_pca_eval$eigenvalues))*100,digits=3),"%)")) +
+  xlab(paste0("PC2 (",round((eu_pca_eval$eigenvalues[2]/sum(eu_pca_eval$eigenvalues))*100,digits=3),"%)")) +
+  labs(shape = "Ancient Individual") +
+  theme(legend.position="bottom") +
+  guides(alpha=guide_legend(ncol=2))
+```
+\
+```{r plot pca2 legend, echo=FALSE, message=FALSE, warning=FALSE, eval=nrow(pca_samples)>0}
+
+## Prepare list of populations for text
+eu_pops_for_text <- eu_pop_labels %>%
+  group_by(region) %>%
+  summarise(pops=paste(pop, collapse=", ")) %>%
+  mutate(
+    Region=case_when(
+      region == "Caucasus" ~ "Caucasus",
+      region == "NEast" ~ "Near East",
+      region == "NEEur" ~ "Northeastern/Eastern Europe",
+      region == "NEur" ~ "Central/North Europe",
+      region == "SEur" ~ "South Europe"
+    )
+  ) %>%
+  select(
+    Region,
+    Populations = pops
+  )
+
+eu_pops_for_text %>%
+  kable(longtable = TRUE, format.args=list(big.mark = ',')) %>%
+  kable_styling(latex_options = c("hold_position")) %>%
+  column_spec(., 1, width="3.5cm") %>%
+  column_spec(., 2, width="13cm") %>%
+  row_spec(1, color="#00BF7D") %>%
+  row_spec(2, color="#E76BF3") %>%
+  row_spec(3, color="#00B0F6")
+```
 \else
 No individuals pass the SNP coverage cutoff for this analysis (`r format(snp_cov_cutoff, digits = 0, big.mark = " ", decimal.mark = ",")` SNPs). A PCA for this data will be added here if/when additional sequencing data becomes available.
 \fi
