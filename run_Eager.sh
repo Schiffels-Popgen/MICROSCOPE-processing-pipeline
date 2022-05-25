@@ -78,6 +78,7 @@ for eager_input in /mnt/archgen/MICROSCOPE/eager_inputs/*.eager_input.tsv; do
             --email ${USER}@eva.mpg.de \
             --outdir ${eager_output_dir} \
             -w ${eager_output_dir}/work \
+            -dsl1 \
             ${barcode_rem} -with-tower -ansi-log false"
 
         touch -c ${eager_output_dir} ## Refresh the creation date of the output directory to reflect the start of the new run, but do not create a file if it doesnt exist.
@@ -90,6 +91,7 @@ for eager_input in /mnt/archgen/MICROSCOPE/eager_inputs/*.eager_input.tsv; do
                 --email ${USER}@eva.mpg.de \
                 --outdir ${eager_output_dir} \
                 -w ${eager_output_dir}/work \
+                -dsl1 \
                 ${barcode_rem} -with-tower -ansi-log false
             
     ## If the MultiQC report is older than the directory, or doesnt exist yet, try to resume execution. Helpful for runs that failed.
@@ -122,6 +124,7 @@ for eager_input in /mnt/archgen/MICROSCOPE/eager_inputs/*.eager_input.tsv; do
                 --email ${USER}@eva.mpg.de \
                 --outdir ${eager_output_dir} \
                 -w ${eager_output_dir}/work \
+                -dsl1 \
                 ${barcode_rem} -with-tower -ansi-log false \
                 -resume"
             
@@ -133,6 +136,7 @@ for eager_input in /mnt/archgen/MICROSCOPE/eager_inputs/*.eager_input.tsv; do
                 --email ${USER}@eva.mpg.de \
                 --outdir ${eager_output_dir} \
                 -w ${eager_output_dir}/work \
+                -dsl1 \
                 ${barcode_rem} -with-tower -ansi-log false \
                 -resume
         else
