@@ -132,6 +132,8 @@ infer_sex <- function(sex_det, sex_cutoffs){
 \
 \
 \
+\
+\
 \hrule \relax
 The following report summarises the preliminary archaeogenetic results for individuals from the following sites:
 ```{r echo=FALSE}
