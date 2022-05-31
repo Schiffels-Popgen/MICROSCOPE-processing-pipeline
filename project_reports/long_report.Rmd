@@ -22,6 +22,7 @@ params:
     cred_file: "/Users/lamnidis/Software/github/Schiffels-Popgen/MICROSCOPE-processing-pipeline/.credentials"
     report_date: "18-05-2022"
     logo_file: "/Users/lamnidis/Software/github/Schiffels-Popgen/MICROSCOPE-processing-pipeline/project_reports/assets/MICROSCOPE_logo_blue.pdf"
+    mpi_logo_file: "/Users/lamnidis/Software/github/Schiffels-Popgen/MICROSCOPE-processing-pipeline/project_reports/assets/EVA_logo.png"
 title: "Preliminary data report"
 subtitle: "`r params$set_subtitle`"
 header-includes: 
@@ -29,7 +30,7 @@ header-includes:
  \fancyhf{}
  \fancypagestyle{plain}{\pagestyle{fancy}}
  \pagestyle{fancy}
- \fancyhead[R]{\includegraphics[height = 1.5cm]{/Users/lamnidis/MPI_Logo_ENG_CMYK_green.png}}
+ \fancyhead[R]{\includegraphics[height = 1.5cm]{`r params$mpi_logo_file`}}
  \fancyfoot{} 
  \cfoot{Report generated on `r params$report_date`}
  \input{header}

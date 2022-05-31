@@ -75,6 +75,9 @@ parser <- add_option(parser, c("-D", "--report_date"), type = 'character',
 parser <- add_option(parser, c("-L", "--logo_file"), type = 'character',
                     action = "store", dest = "logo_file",
                     help = "Path to the project logo.")
+parser <- add_option(parser, c("-m", "--mpi_logo_file"), type = 'character',
+                    action = "store", dest = "mpi_logo_file",
+                    help = "Path to the project logo.")
 arguments <- parse_args(parser)
 
 opts <- arguments
@@ -110,7 +113,8 @@ render(reportTemplate,
         eu_eval_fn = opts$eu_eval_fn,
         eu_evec_fn = opts$eu_evec_fn,
         report_date = opts$report_date,
-        logo_file = opts$logo_file
+        logo_file = opts$logo_file,
+        mpi_logo_file = opts$mpi_logo_file
         ),
     output_file = opts$output_name,
     output_dir = dirname(opts$output_name)

@@ -39,6 +39,7 @@ eu_evec_fn="/mnt/archgen/MICROSCOPE/automated_analysis/microscope_pca/Europe_onl
 eu_eval_fn="/mnt/archgen/MICROSCOPE/automated_analysis/microscope_pca/Europe_only_pca.eval"
 janno_fn="/mnt/archgen/MICROSCOPE/forged_packages/microscope_pca/microscope_pca.janno"
 logo_file="/r1/people/thiseas_christos_lamnidis/Software/github/Schiffels-Popgen/MICROSCOPE-processing-pipeline/project_reports/assets/MICROSCOPE_logo_blue.pdf"
+mpi_logo_file="/r1/people/thiseas_christos_lamnidis/Software/github/Schiffels-Popgen/MICROSCOPE-processing-pipeline/project_reports/assets/EVA_logo.png"
 
 
 ## Get list of completed runs (MQC report exists)
@@ -103,7 +104,8 @@ for idx in ${!finished_runs[@]}; do
             --eu_eval_fn ${eu_eval_fn} \
             --output_pdf_name ${expected_outputs[${idx}]} \
             --report_date ${report_date} \
-            --logo_file ${logo_file}
+            --logo_file ${logo_file} \
+            --mpi_logo_file ${mpi_logo_file}
     # exit 0 ## For Testing
     elif [[ ${we_evec_fn} -ot ${finished_runs[${idx}]} || ${eu_evec_fn} -ot ${finished_runs[${idx}]} ]]; then
         ## Error message when the PCA results are outdated.
