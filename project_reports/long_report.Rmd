@@ -4,23 +4,24 @@ output:
 geometry: "left=2cm,right=2cm,bottom=2cm,headheight=48pt"
 params: 
     set_subtitle: "Relic_samples"
-    snp_coverage_file: "~/mount/eager_outputs/2020-05-03-relic_samples/genotyping/double_eigenstrat_coverage.txt"
-    sex_det_file: "~/mount/eager_outputs/2020-05-03-relic_samples/sex_determination/SexDet.txt"
-    stats_table: "~/mount/eager_outputs/2020-05-03-relic_samples/multiqc/multiqc_data/multiqc_general_stats.txt"
-    poseidon_geno: "~/mount/poseidon_packages/2020-05-03-relic_samples/2020-05-03-relic_samples.geno"
-    poseidon_snp: "~/mount/poseidon_packages/2020-05-03-relic_samples/2020-05-03-relic_samples.snp"
-    poseidon_ind: "~/mount/poseidon_packages/2020-05-03-relic_samples/2020-05-03-relic_samples.ind"
-    poseidon_janno: "~/mount/forged_packages/microscope_pca/microscope_pca.janno"
-    read_results_fn: "~/mount/automated_analysis/2020-05-03-relic_samples/read/2020-05-03-relic_samples.read.txt"
+    snp_coverage_file: "/Users/lamnidis/mount/eager_outputs/2020-05-03-relic_samples/genotyping/double_eigenstrat_coverage.txt"
+    sex_det_file: "/Users/lamnidis/mount/eager_outputs/2020-05-03-relic_samples/sex_determination/SexDet.txt"
+    stats_table: "/Users/lamnidis/mount/eager_outputs/2020-05-03-relic_samples/multiqc/multiqc_data/multiqc_general_stats.txt"
+    poseidon_geno: "/Users/lamnidis/mount/poseidon_packages/2020-05-03-relic_samples/2020-05-03-relic_samples.geno"
+    poseidon_snp: "/Users/lamnidis/mount/poseidon_packages/2020-05-03-relic_samples/2020-05-03-relic_samples.snp"
+    poseidon_ind: "/Users/lamnidis/mount/poseidon_packages/2020-05-03-relic_samples/2020-05-03-relic_samples.ind"
+    poseidon_janno: "/Users/lamnidis/mount/forged_packages/microscope_pca/microscope_pca.janno"
+    read_results_fn: "/Users/lamnidis/mount/automated_analysis/2020-05-03-relic_samples/read/2020-05-03-relic_samples.read.txt"
     read_plot_fn: "/Users/lamnidis/mount/automated_analysis/2020-05-03-relic_samples/read/2020-05-03-relic_samples.read.plot.pdf"
-    pmmr_results_fn: "~/mount/automated_analysis/2020-05-03-relic_samples/pmmr/2020-05-03-relic_samples.pmmr.txt"
-    pca_bg_annotation: "~/Software/github/Schiffels-Popgen/MICROSCOPE-processing-pipeline/project_reports/assets/bg_annotation.txt"
-    we_evec_fn: "~/mount/automated_analysis/microscope_pca/West_Eurasian_pca.evec"
-    we_eval_fn: "~/mount/automated_analysis/microscope_pca/West_Eurasian_pca.eval"
-    eu_evec_fn: "~/mount/automated_analysis/microscope_pca/Europe_only_pca.evec"
-    eu_eval_fn: "~/mount/automated_analysis/microscope_pca/Europe_only_pca.eval"
-    cred_file: "~/Software/github/Schiffels-Popgen/MICROSCOPE-processing-pipeline/.credentials"
+    pmmr_results_fn: "/Users/lamnidis/mount/automated_analysis/2020-05-03-relic_samples/pmmr/2020-05-03-relic_samples.pmmr.txt"
+    pca_bg_annotation: "/Users/lamnidis/Software/github/Schiffels-Popgen/MICROSCOPE-processing-pipeline/project_reports/assets/bg_annotation.txt"
+    we_evec_fn: "/Users/lamnidis/mount/automated_analysis/microscope_pca/West_Eurasian_pca.evec"
+    we_eval_fn: "/Users/lamnidis/mount/automated_analysis/microscope_pca/West_Eurasian_pca.eval"
+    eu_evec_fn: "/Users/lamnidis/mount/automated_analysis/microscope_pca/Europe_only_pca.evec"
+    eu_eval_fn: "/Users/lamnidis/mount/automated_analysis/microscope_pca/Europe_only_pca.eval"
+    cred_file: "/Users/lamnidis/Software/github/Schiffels-Popgen/MICROSCOPE-processing-pipeline/.credentials"
     report_date: "18-05-2022"
+    logo_file: "/Users/lamnidis/Software/github/Schiffels-Popgen/MICROSCOPE-processing-pipeline/project_reports/assets/MICROSCOPE_logo_blue.pdf"
 title: "Preliminary data report"
 subtitle: "`r params$set_subtitle`"
 header-includes: 
@@ -33,10 +34,16 @@ header-includes:
  \cfoot{Report generated on `r params$report_date`}
  \input{header}
  \renewcommand{\footrulewidth}{0.4pt}
+ \usepackage{helvet}
+ \usepackage[T1]{fontenc}
+ \renewcommand{\familydefault}{\sfdefault}
 ---
-
 \begin{center}
-ERC-Project MICROSCOPE. Sample Report.
+ERC-Project MICROSCOPE:
+
+Zooming into the Population History of Iron Age Europe with Rare Genetic Variants.
+
+Sample Report.
 
 Project lead: Dr. Stephan Schiffels
 
@@ -45,6 +52,10 @@ Scientific Staff: Dr. Thiseas C. Lamnidis and Dr. Angela Mötsch
 Date of Report: `r params$report_date`
 
 \end{center}
+
+```{r echo=FALSE, fig.align='center'}
+knitr::include_graphics(params$logo_file)
+```
 
 ```{r load_libraries, message=FALSE, warning=FALSE, include=FALSE}
 ## Load required packages
@@ -111,15 +122,6 @@ infer_sex <- function(sex_det, sex_cutoffs){
 }
 ```
 
-\
-\
-\
-\
-\
-\
-\
-\
-\
 \
 \
 \
