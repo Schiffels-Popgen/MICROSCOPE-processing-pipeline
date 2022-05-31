@@ -24,14 +24,15 @@ params:
     logo_file: "/Users/lamnidis/Software/github/Schiffels-Popgen/MICROSCOPE-processing-pipeline/project_reports/assets/MICROSCOPE_logo_blue.pdf"
     mpi_logo_file: "/Users/lamnidis/Software/github/Schiffels-Popgen/MICROSCOPE-processing-pipeline/project_reports/assets/EVA_logo.png"
 title: "Preliminary data report"
-subtitle: "`r params$set_subtitle`"
+subtitle: ""
 header-includes: 
  \usepackage{fancyhdr}
  \fancyhf{}
  \fancypagestyle{plain}{\pagestyle{fancy}}
  \pagestyle{fancy}
  \fancyhead[R]{\includegraphics[height = 1.5cm]{`r params$mpi_logo_file`}}
- \fancyfoot{} 
+ \fancyfoot{}
+ \fancyfoot[R]{\thepage} 
  \cfoot{Report generated on `r params$report_date`}
  \input{header}
  \renewcommand{\footrulewidth}{0.4pt}
@@ -40,23 +41,25 @@ header-includes:
  \renewcommand{\familydefault}{\sfdefault}
 ---
 \begin{center}
-ERC-Project MICROSCOPE:
+
+{\bfseries ERC-Project MICROSCOPE:}
 
 Zooming into the Population History of Iron Age Europe with Rare Genetic Variants.
-
-Sample Report.
-
-Project lead: Dr. Stephan Schiffels
-
-Scientific Staff: Dr. Thiseas C. Lamnidis and Dr. Angela Mötsch
-
-Date of Report: `r params$report_date`
 
 \end{center}
 
 ```{r echo=FALSE, fig.align='center'}
 knitr::include_graphics(params$logo_file)
 ```
+\begin{center}
+
+{\bfseries Project lead:} Dr. Stephan Schiffels
+
+{\bfseries Scientific Staff:} Dr. Thiseas C. Lamnidis and Dr. Angela Mötsch
+
+{\bfseries Date of Report:} `r params$report_date`
+
+\end{center}
 
 ```{r load_libraries, message=FALSE, warning=FALSE, include=FALSE}
 ## Load required packages
@@ -301,10 +304,10 @@ if (file.exists(params$read_results_fn) && file.exists(params$read_plot_fn)) {
     mutate(
       IndA_ID = substr(PairIndividuals, 0,6),
       IndB_ID = substr(PairIndividuals, 7,12),
-      IndA = pull_arch_id(pandora_data, IndA_ID),
-      IndB = pull_arch_id(pandora_data, IndB_ID)
+      IndA_Arch.ID = pull_arch_id(pandora_data, IndA_ID),
+      IndB_Arch.ID = pull_arch_id(pandora_data, IndB_ID)
     ) %>%
-    select(IndA_ID, IndB_ID, IndA, IndB, Relationship, Z_upper, Z_lower) %>%
+    select(IndA_ID, IndB_ID, IndA_Arch.ID, IndB_Arch.ID, Relationship, Z_upper, Z_lower) %>%
     filter(Relationship != "Unrelated")
     
   show_kinship <- nrow(read_results) > 0
