@@ -57,10 +57,10 @@ parser <- add_option(parser, c("-b", "--batch_name"), type = 'character',
 parser <- add_option(parser, c("-a", "--bg_annotation_file"), type = 'character',
                     action = "store", dest = "bg_annotation_fn",
                     help = "The path to the file with the annotation info for the PCA background.")
-parser <- add_option(parser, c("-E", "--we_evec_fn"), type = 'character',
+parser <- add_option(parser, c("-W", "--we_evec_fn"), type = 'character',
                     action = "store", dest = "we_evec_fn",
                     help = "Path to the West Eurasian PCA eigenvector file.")
-parser <- add_option(parser, c("-e", "--we_eval_fn"), type = 'character',
+parser <- add_option(parser, c("-w", "--we_eval_fn"), type = 'character',
                     action = "store", dest = "we_eval_fn",
                     help = "Path to the West Eurasian PCA eigenvalue file.")
 parser <- add_option(parser, c("-E", "--eu_evec_fn"), type = 'character',
