@@ -60,7 +60,7 @@ done
 for idx in ${!finished_runs[@]}; do
     batch_Id=$(echo ${finished_runs[${idx}]} | rev | cut -f 3 -d '/' | rev)
     batch_name=$(echo ${batch_Id} | rev | cut -f1 -d "-" | rev)
-    if [[ ${force_remake} == "TRUE" || (${finished_runs[${idx}]} -nt ${expected_outputs[${idx}]} && ${evec_fn} -nt ${finished_runs[${idx}]}) ]]; then
+    if [[ ${force_remake} == "TRUE" || (${finished_runs[${idx}]} -nt ${expected_outputs[${idx}]} && ${we_evec_fn} -nt ${finished_runs[${idx}]} && ${eu_evec_fn} -nt ${finished_runs[${idx}]}) ]]; then
         ## Infer filepaths for snp_coverage, sex det results and general stats table
         ##  When multiple snp coverage files exist (ssDNA + dsDNA) they get sorted alphabetically.
         ##  Take the last by index to prefer ssDNA when multiple files exist (Same as poseidon package creation).
@@ -105,10 +105,10 @@ for idx in ${!finished_runs[@]}; do
             --report_date ${report_date} \
             --logo_file ${logo_file}
     # exit 0 ## For Testing
-    elif [[ ${evec_fn} -ot ${finished_runs[${idx}]} ]]; then
+    elif [[ ${we_evec_fn} -ot ${finished_runs[${idx}]} || ${eu_evec_fn} -ot ${finished_runs[${idx}]} ]]; then
         ## Error message when the PCA results are outdated.
         echo -e "${Yellow}PCA has not been updated since package '${batch_Id}' was updated.$(tput sgr0)"
-        echo "  Consider updating the PCA evec file, or use '-f' to force report (re)creation."
+        echo "  Consider updating the PCA evec files, or use '-f' to force report (re)creation."
     else
         echo "Long report for ${batch_Id} did not need updating. Skipping this batch."
     fi
