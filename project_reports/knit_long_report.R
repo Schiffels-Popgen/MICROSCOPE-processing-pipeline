@@ -66,6 +66,9 @@ parser <- add_option(parser, c("-e", "--eval_fn"), type = 'character',
 parser <- add_option(parser, c("-D", "--report_date"), type = 'character',
                     action = "store", dest = "report_date",
                     help = "The date of the report generation.")
+parser <- add_option(parser, c("-L", "--logo_file"), type = 'character',
+                    action = "store", dest = "logo_file",
+                    help = "Path to the project logo.")
 arguments <- parse_args(parser)
 
 opts <- arguments
@@ -98,7 +101,8 @@ render(reportTemplate,
         pca_bg_annotation = opts$bg_annotation_fn,
         eval_fn = opts$eval_fn,
         evec_fn = opts$evec_fn,
-        report_date = opts$report_date
+        report_date = opts$report_date,
+        project_logo = opts$logo_file
         ),
     output_file = opts$output_name,
     output_dir = dirname(opts$output_name)
