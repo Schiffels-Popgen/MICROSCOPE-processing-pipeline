@@ -57,12 +57,18 @@ parser <- add_option(parser, c("-b", "--batch_name"), type = 'character',
 parser <- add_option(parser, c("-a", "--bg_annotation_file"), type = 'character',
                     action = "store", dest = "bg_annotation_fn",
                     help = "The path to the file with the annotation info for the PCA background.")
-parser <- add_option(parser, c("-E", "--evec_fn"), type = 'character',
-                    action = "store", dest = "evec_fn",
-                    help = "Path to the PCA eigenvector file.")
-parser <- add_option(parser, c("-e", "--eval_fn"), type = 'character',
-                    action = "store", dest = "eval_fn",
-                    help = "Path to the PCA eigenvalue file.")
+parser <- add_option(parser, c("-E", "--we_evec_fn"), type = 'character',
+                    action = "store", dest = "we_evec_fn",
+                    help = "Path to the West Eurasian PCA eigenvector file.")
+parser <- add_option(parser, c("-e", "--we_eval_fn"), type = 'character',
+                    action = "store", dest = "we_eval_fn",
+                    help = "Path to the West Eurasian PCA eigenvalue file.")
+parser <- add_option(parser, c("-E", "--eu_evec_fn"), type = 'character',
+                    action = "store", dest = "eu_evec_fn",
+                    help = "Path to the European PCA eigenvector file.")
+parser <- add_option(parser, c("-e", "--eu_eval_fn"), type = 'character',
+                    action = "store", dest = "eu_eval_fn",
+                    help = "Path to the European PCA eigenvalue file.")
 parser <- add_option(parser, c("-D", "--report_date"), type = 'character',
                     action = "store", dest = "report_date",
                     help = "The date of the report generation.")
@@ -99,10 +105,12 @@ render(reportTemplate,
         read_plot_fn = opts$read_pdf,
         pmmr_results_fn = opts$pmmr_fn,
         pca_bg_annotation = opts$bg_annotation_fn,
-        eval_fn = opts$eval_fn,
-        evec_fn = opts$evec_fn,
+        we_eval_fn = opts$we_eval_fn,
+        we_evec_fn = opts$we_evec_fn,
+        eu_eval_fn = opts$eu_eval_fn,
+        eu_evec_fn = opts$eu_evec_fn,
         report_date = opts$report_date,
-        project_logo = opts$logo_file
+        logo_file = opts$logo_file
         ),
     output_file = opts$output_name,
     output_dir = dirname(opts$output_name)

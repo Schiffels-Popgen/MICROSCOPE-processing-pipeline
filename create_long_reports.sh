@@ -33,8 +33,10 @@ long_report_dir="/mnt/archgen/MICROSCOPE/reports"
 base_poseidon_package_dir="/mnt/archgen/MICROSCOPE/poseidon_packages"
 base_analysis_dir="/mnt/archgen/MICROSCOPE/automated_analysis"
 bg_annotation_fn="/r1/people/thiseas_christos_lamnidis/Software/github/Schiffels-Popgen/MICROSCOPE-processing-pipeline/project_reports/assets/bg_annotation.txt"
-evec_fn="/mnt/archgen/MICROSCOPE/automated_analysis/microscope_pca/West_Eurasian_pca.evec"
-eval_fn="/mnt/archgen/MICROSCOPE/automated_analysis/microscope_pca/West_Eurasian_pca.eval"
+we_evec_fn="/mnt/archgen/MICROSCOPE/automated_analysis/microscope_pca/West_Eurasian_pca.evec"
+we_eval_fn="/mnt/archgen/MICROSCOPE/automated_analysis/microscope_pca/West_Eurasian_pca.eval"
+eu_evec_fn="/mnt/archgen/MICROSCOPE/automated_analysis/microscope_pca/Europe_only_pca.evec"
+eu_eval_fn="/mnt/archgen/MICROSCOPE/automated_analysis/microscope_pca/Europe_only_pca.eval"
 janno_fn="/mnt/archgen/MICROSCOPE/forged_packages/microscope_pca/microscope_pca.janno"
 logo_file="/r1/people/thiseas_christos_lamnidis/Software/github/Schiffels-Popgen/MICROSCOPE-processing-pipeline/project_reports/assets/MICROSCOPE_logo_blue.pdf"
 
@@ -95,8 +97,10 @@ for idx in ${!finished_runs[@]}; do
             --SnpFile ${snp_fn} \
             --IndFile ${ind_fn} \
             --bg_annotation_file ${bg_annotation_fn} \
-            --evec_fn ${evec_fn} \
-            --eval_fn ${eval_fn} \
+            --we_evec_fn ${we_evec_fn} \
+            --we_eval_fn ${we_eval_fn} \
+            --eu_evec_fn ${eu_evec_fn} \
+            --eu_eval_fn ${eu_eval_fn} \
             --output_pdf_name ${expected_outputs[${idx}]} \
             --report_date ${report_date} \
             --logo_file ${logo_file}
