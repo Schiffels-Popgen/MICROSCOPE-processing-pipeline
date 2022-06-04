@@ -58,7 +58,7 @@ process pmmrCalculator {
     tuple path(geno), path(snp), path(ind) from ch_input_for_pmmr.dump()
 
     output:
-    file("${params.batch}.pmmr.txt")
+    file "${params.batch}.pmmr.txt"
 
     script:
     """
@@ -101,7 +101,7 @@ Channel.fromPath("/mnt/archgen/MICROSCOPE/forged_packages/microscope_pca/*.{geno
 process microscope_pca_eurasia {
     conda 'bioconda::eigensoft=7.2.1'
     publishDir "/mnt/archgen/MICROSCOPE/automated_analysis/microscope_pca/", mode: 'copy'
-    memory '16GB'
+    memory '20GB'
     cpus 4
 
     input:
@@ -122,7 +122,7 @@ process microscope_pca_eurasia {
 process microscope_pca_europe {
     conda 'bioconda::eigensoft=7.2.1'
     publishDir "/mnt/archgen/MICROSCOPE/automated_analysis/microscope_pca/", mode: 'copy'
-    memory '16GB'
+    memory '20GB'
     cpus 4
 
     input:
