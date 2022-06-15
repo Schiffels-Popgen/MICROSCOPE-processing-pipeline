@@ -26,6 +26,7 @@ done
 microscope_config='/mnt/archgen/MICROSCOPE/MICROSCOPE.config'
 tower_config='/r1/people/thiseas_christos_lamnidis/Software/github/Schiffels-Popgen/MICROSCOPE-processing-pipeline/.nextflow_tower_automated_analysis'
 script_path='/r1/people/thiseas_christos_lamnidis/Software/github/Schiffels-Popgen/MICROSCOPE-processing-pipeline/microscope_automated_analysis.nf'
+phenotype_annotation='/r1/people/thiseas_christos_lamnidis/Software/github/Schiffels-Popgen/MICROSCOPE-processing-pipeline/phenotypic_snps/SNPs.txt'
 
 ## If a tower workspace id is provided in .nextflow_tower, use it, else print a warning and continue
 if [[ -f ${tower_config} ]]; then
@@ -70,6 +71,7 @@ for poseidon_input in /mnt/archgen/MICROSCOPE/poseidon_packages/*[!remote]; do
             --email ${USER}@eva.mpg.de \
             --outdir ${automated_analysis_output_dir} \
             -w ${automated_analysis_output_dir}/${batch_name}/work \
+            --phenotype_annotation ${phenotype_annotation} \
             -dsl1 \
             -with-tower -ansi-log false"
 
@@ -82,11 +84,12 @@ for poseidon_input in /mnt/archgen/MICROSCOPE/poseidon_packages/*[!remote]; do
             --email ${USER}@eva.mpg.de \
             --outdir ${automated_analysis_output_dir} \
             -w ${automated_analysis_output_dir}/${batch_name}/work \
+            --phenotype_annotation ${phenotype_annotation} \
             -dsl1 \
             -with-tower -ansi-log false
             
     ## If the pipeline output is older than the directory, or doesnt exist yet, try to resume execution. Helpful for runs that failed.
-    elif [[ ${automated_analysis_output_dir}/${batch_name} -nt ${automated_analysis_output_dir}/${batch_name}/read/${batch_name}.read.plot.pdf  || ${automated_analysis_output_dir}/${batch_name} -nt ${automated_analysis_output_dir}/${batch_name}/read/${batch_name}.read.txt || ${automated_analysis_output_dir}/${batch_name} -nt ${automated_analysis_output_dir}/${batch_name}/pmmr/${batch_name}.pmmr.txt ]]; then
+    elif [[ ${automated_analysis_output_dir}/${batch_name} -nt ${automated_analysis_output_dir}/${batch_name}/read/${batch_name}.read.plot.pdf  || ${automated_analysis_output_dir}/${batch_name} -nt ${automated_analysis_output_dir}/${batch_name}/read/${batch_name}.read.txt || ${automated_analysis_output_dir}/${batch_name} -nt ${automated_analysis_output_dir}/${batch_name}/pmmr/${batch_name}.pmmr.txt || ${automated_analysis_output_dir}/${batch_name} -nt ${automated_analysis_output_dir}/${batch_name}/phenotypes/${batch_name}.phenotypes.txt ]]; then
         if [[ ${dry_run} == "TRUE" ]]; then
             echo "${batch_name} needs reprocessing."
             continue
@@ -114,6 +117,7 @@ for poseidon_input in /mnt/archgen/MICROSCOPE/poseidon_packages/*[!remote]; do
                 --email ${USER}@eva.mpg.de \
                 --outdir ${automated_analysis_output_dir} \
                 -w ${automated_analysis_output_dir}/${batch_name}/work \
+                --phenotype_annotation ${phenotype_annotation} \
                 -dsl1 \
                 -with-tower -ansi-log false \
                 -resume"
@@ -125,6 +129,7 @@ for poseidon_input in /mnt/archgen/MICROSCOPE/poseidon_packages/*[!remote]; do
                 --email ${USER}@eva.mpg.de \
                 --outdir ${automated_analysis_output_dir} \
                 -w ${automated_analysis_output_dir}/${batch_name}/work \
+                --phenotype_annotation ${phenotype_annotation} \
                 -dsl1 \
                 -with-tower -ansi-log false \
                 -resume

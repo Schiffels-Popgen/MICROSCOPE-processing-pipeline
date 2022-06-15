@@ -12,6 +12,7 @@ def helpMessage() {
       -profile [str]          Institution or personal hardware config to use (e.g. standard, docker, singularity, conda, aws). Ask your system admin if unsure, or check documentation.
       --batch   [str]         The sequencing batch name to process.
       --outdir [str]          The desired directory within which all output files will be placed. One directory per sequencing batch will be created within this directory, which in turn will contain one directory per analysis.
+      --phenotype_annotation [str] The path to the desired SNP annotation file for phenotypic analysis.
   """.stripIndent()
 }
 
@@ -186,5 +187,47 @@ process kinship_read {
 
     mv READ_results ${params.batch}.read.txt
     mv READ_results_plot.pdf ${params.batch}.read.plot.pdf
+    """
+}
+
+// Create channel with all trimmed bams. Will contain duplicates and multiple libraries etc in older batches.
+ch_bams_for_phenotypes = Channel
+        .fromFilePairs("//mnt/archgen/MICROSCOPE/eager_outputs/${params.batch}/trimmed_bam/*bam{,.bai}")
+        //Filter out reaaaally old *.SG1.1 batches. unmerged-trimmed libs that later got merged and trimmed will still exist sadly.
+        .filter {! (it[0] =~ /.*1.1.trimmed/) }
+        .map{
+            sample_name = it[0].minus(".trimmed")
+            bam = it [1][0]
+            bai = it [1][1]
+
+            [sample_name, bam, bai]
+        }
+        .dump(tag:"phenotypes")
+
+process phenotypic_analysis {
+    tag "${params.batch}"
+    conda "bioconda::samtools=1.14"
+    publishDir "${params.outdir}/${params.batch}/phenotypes", mode: 'copy'
+    memory '1GB'
+    cpus 1
+
+    input:
+    tuple bam_name, bams, bais from ch_bams_for_phenotypes.collect()
+
+    output:
+    file("${params.batch}.phenotypes.txt")
+
+    script:
+    """
+    ## Create samplelist
+    for name in ${bam_name}; do
+        echo \${name} >>samplelist.txt
+    done
+
+    ## get mpileup results
+    samtools mpileup -a -Q 30 -B -q30 -l <(awk -v OFS="\t" -F "\t" '{print \$3,\$4}' ${params.phenotype_annotation} | tail -n +2) ${bams} >${params.batch}.mpileup.q30.Q30.B.txt
+
+    ## Check phenotypes
+    ${baseDir}/phenotypic_snps/infer_phenotypes.py -a${params.phenotype_annotation} -f samplelist.txt ${params.batch}.mpileup.q30.Q30.B.txt >${params.batch}.phenotypes.txt
     """
 }
