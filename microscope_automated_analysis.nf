@@ -56,7 +56,7 @@ process pmmrCalculator {
     cpus 1
 
     input:
-    tuple path(geno), path(snp), path(ind) from ch_input_for_pmmr.dump()
+    tuple path(geno), path(snp), path(ind) from ch_input_for_pmmr.dump(tag:"input_pmmr")
 
     output:
     file "${params.batch}.pmmr.txt"
@@ -106,7 +106,7 @@ process microscope_pca_eurasia {
     cpus 4
 
     input:
-    tuple path(geno), path(snp), path(ind) from ch_for_smartpca_eurasia.dump()
+    tuple path(geno), path(snp), path(ind) from ch_for_smartpca_eurasia.dump(tag:"input_pca_eur")
     val dummy from ch_dummy_for_pca_dependency_eurasia
 
     output:
@@ -127,7 +127,7 @@ process microscope_pca_europe {
     cpus 4
 
     input:
-    tuple path(geno), path(snp), path(ind) from ch_for_smartpca_europe.dump()
+    tuple path(geno), path(snp), path(ind) from ch_for_smartpca_europe.dump(tag:"input_pca_eur"
     val dummy from ch_dummy_for_pca_dependency_europe
 
     output:
@@ -161,7 +161,7 @@ process kinship_read {
     cpus 1
 
     input:
-    tuple path(bed), path(bim), path(fam) from ch_input_for_read.dump()
+    tuple path(bed), path(bim), path(fam) from ch_input_for_read.dump(tag:"input_read")
 
     output:
     file "${params.batch}.read.txt"
@@ -169,8 +169,8 @@ process kinship_read {
 
     script:
     """
-    ## Filter out non-autosomal genotypes, and samples with missingness below 1.5% (about 18k SNPs)
-    plink --bfile ${bed.baseName} --make-bed --out ${bed.baseName}.autosomes --autosome --mind 0.995
+    ## Filter out non-autosomal genotypes, and samples with missingness below about 10k SNPs.
+    plink --bfile ${bed.baseName} --make-bed --out ${bed.baseName}.autosomes --autosome --mind 0.9918
 
     ## Create map file from bim
     ## cut -f 1-4 ${bim.baseName}.autosomes.bim >${bed.baseName}.autosomes.recoded .map
