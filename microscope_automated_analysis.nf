@@ -35,7 +35,6 @@ println ""
 /////////////////////////////////////////////////////////
 /* --          Create input channel                 -- */
 /////////////////////////////////////////////////////////
-println(params)
 Channel.fromPath("/mnt/archgen/MICROSCOPE/poseidon_packages/${params.batch}/*.{geno,snp,ind}")
     .toSortedList()
     .map {
@@ -127,7 +126,7 @@ process microscope_pca_europe {
     cpus 4
 
     input:
-    tuple path(geno), path(snp), path(ind) from ch_for_smartpca_europe.dump(tag:"input_pca_eur"
+    tuple path(geno), path(snp), path(ind) from ch_for_smartpca_europe.dump(tag:"input_pca_eur")
     val dummy from ch_dummy_for_pca_dependency_europe
 
     output:
