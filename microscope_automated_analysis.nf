@@ -211,15 +211,17 @@ process phenotypic_analysis {
     cpus 1
 
     input:
-    tuple bam_name, bams, bais from ch_bams_for_phenotypes.collect()
+    // Apparently using groupTuple with an out-of-range index flips columns and rows of the channel... :shrug:
+    tuple bam_name, path(bams), path(bais) from ch_bams_for_phenotypes.groupTuple(by: [4] ).dump(tag:"phenotypes_input")
 
     output:
     file("${params.batch}.phenotypes.txt")
 
     script:
+    def name_list = bam_name.flatten().join(" ")
     """
     ## Create samplelist
-    for name in ${bam_name}; do
+    for name in ${name_list}; do
         echo \${name} >>samplelist.txt
     done
 
