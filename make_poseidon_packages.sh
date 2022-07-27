@@ -20,6 +20,7 @@ update_switch="off" ## Do any packages need updating? Then update al janno files
 ## Colours to make prompts easier to read
 Yellow=$(tput sgr0)'\033[1;33m' ## Yellow normal face
 Normal=$(tput sgr0)
+processed_batches=''
 
 for seq_batch in $(find /mnt/archgen/MICROSCOPE/eager_outputs/* -maxdepth 0 ! -path "*2021-01-27-Prague_bams"); do
     batch_name=$(basename ${seq_batch})
@@ -52,6 +53,7 @@ for seq_batch in $(find /mnt/archgen/MICROSCOPE/eager_outputs/* -maxdepth 0 ! -p
 
         ## Also make plink format dataset (needed for READ)
         trident genoconvert -d /mnt/archgen/MICROSCOPE/poseidon_packages/${batch_name} --outFormat PLINK
+        processed_batches+="${batch_name} "
 
 
     ## If no single stranded genotypes exist, use double stranded library data for genotypes instead.
@@ -173,3 +175,11 @@ if [[ ${force_update_switch} == "TRUE" || ${update_switch} == "on" ]]; then
 else
     echo "No packages needed updating. Halting execution."
 fi
+
+## Print out the batches that got updates for posting on Mattermost
+if [[ ${processed_batches} != '' ]]; then
+    echo "$(date -Idate) Poseidon package updates:"
+fi
+for processed_batch in ${processed_batches}; do
+    echo " - \`${processed_batch}\`"
+done
