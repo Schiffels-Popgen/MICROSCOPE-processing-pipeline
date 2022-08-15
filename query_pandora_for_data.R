@@ -146,6 +146,12 @@ collect_and_format_info<- function(query_list_seq, con) {
     ) %>%
     ## Rename final column names to valid Eager input headers
     rename(Sample_Name=individual.Full_Individual_Id, Library_ID=capture.Full_Capture_Id,) %>%
+    ## Append '_ss' suffix to Sample ID for single stranded data
+    mutate(
+      Sample_Name=ifelse(Strandedness == 'single', paste0(Sample_Name, "_ss"), Sample_Name)
+    ) %>%
+    ## Then rearrange by Library_ID and Sample_Name to keep entries grouped
+    arrange(Sample_Name, Library_ID) %>%
     ## Keep only final tsv columns in correct order
     select(Sample_Name, Library_ID, Lane, Colour_Chemistry, SeqType, Organism, Strandedness, UDG_Treatment, R1, R2, BAM)
   return(results)
