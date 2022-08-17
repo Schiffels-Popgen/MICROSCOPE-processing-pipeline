@@ -25,7 +25,8 @@ done
 
 # eager_version='2.2.1' #7971d89e54
 # eager_version='2.3.5' ## Changed on 05/07/2021
-eager_version='2.4.2' ## Changed 01/02/2022. Fixes resource requirement of bedtools coverage.
+# eager_version='2.4.2' ## Changed 01/02/2022. Fixes resource requirement of bedtools coverage.
+eager_version='2.4.5' ## Changed 16/08/2022. Fixes endorspy resume issues
 
 microscope_config='/mnt/archgen/MICROSCOPE/MICROSCOPE.config'
 barcode_info_fn='/mnt/archgen/MICROSCOPE/batches_with_adapters.tsv'
