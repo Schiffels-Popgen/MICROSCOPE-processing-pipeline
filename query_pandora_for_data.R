@@ -146,9 +146,10 @@ collect_and_format_info<- function(query_list_seq, con) {
     ) %>%
     ## Rename final column names to valid Eager input headers
     rename(Sample_Name=individual.Full_Individual_Id, Library_ID=capture.Full_Capture_Id,) %>%
-    ## Append '_ss' suffix to Sample ID for single stranded data
+    ## Append '_ss' suffix to Sample ID in Sample ID and Library ID for single stranded data. Latter is important for sorting in MQC.
     mutate(
-      Sample_Name=ifelse(Strandedness == 'single', paste0(Sample_Name, "_ss"), Sample_Name)
+      Sample_Name = ifelse(Strandedness == 'single', paste0(Sample_Name, "_ss"), Sample_Name),
+      Library_ID = if_else(Strandedness == 'single', sub("\\.", "_ss.", Library_ID), Library_ID)
     ) %>%
     ## Then rearrange by Library_ID and Sample_Name to keep entries grouped
     arrange(Sample_Name, Library_ID) %>%
