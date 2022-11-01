@@ -25,7 +25,7 @@ processed_batches=''
 for seq_batch in $(find /mnt/archgen/MICROSCOPE/eager_outputs/* -maxdepth 0 ! -path "*2021-01-27-Prague_bams"); do
     batch_name=$(basename ${seq_batch})
     ## Prefer single stranded to double stranded library data for genotypes.
-    if [[ (${force} == "TRUE" && -f ${seq_batch}/genotyping/pileupcaller.single.geno.txt) || (${seq_batch}/genotyping/pileupcaller.single.geno.txt -nt /mnt/archgen/MICROSCOPE/poseidon_packages/${batch_name}/POSEIDON.yml) ]]; then
+    if [[ (${force} == "TRUE" && -f ${seq_batch}/genotyping/pileupcaller.single.geno) || (${seq_batch}/genotyping/pileupcaller.single.geno -nt /mnt/archgen/MICROSCOPE/poseidon_packages/${batch_name}/POSEIDON.yml) ]]; then
         update_switch="on"
         update_batches+="${batch_name} " ## add batch to janno update list
         echo -e "${Yellow}SSLib found for ${batch_name}${Normal}"
@@ -39,14 +39,14 @@ for seq_batch in $(find /mnt/archgen/MICROSCOPE/eager_outputs/* -maxdepth 0 ! -p
         trident init \
             --inFormat EIGENSTRAT \
             --snpSet 1240K \
-            --genoFile /mnt/archgen/MICROSCOPE/eager_outputs/${batch_name}/genotyping/pileupcaller.single.geno.txt \
-            --snpFile /mnt/archgen/MICROSCOPE/eager_outputs/${batch_name}/genotyping/pileupcaller.single.snp.txt \
-            --indFile /mnt/archgen/MICROSCOPE/eager_outputs/${batch_name}/genotyping/pileupcaller.single.ind.txt \
+            --genoFile /mnt/archgen/MICROSCOPE/eager_outputs/${batch_name}/genotyping/pileupcaller.single.geno \
+            --snpFile /mnt/archgen/MICROSCOPE/eager_outputs/${batch_name}/genotyping/pileupcaller.single.snp \
+            --indFile /mnt/archgen/MICROSCOPE/eager_outputs/${batch_name}/genotyping/pileupcaller.single.ind \
             -o /mnt/archgen/MICROSCOPE/poseidon_packages/${batch_name} \
             -n ${batch_name}
 
         sed -i -e ${regex} /mnt/archgen/MICROSCOPE/poseidon_packages/${batch_name}/POSEIDON.yml
-        rename -f -e ${regex} /mnt/archgen/MICROSCOPE/poseidon_packages/${batch_name}/pileupcaller.*.txt
+        rename -f -e ${regex} /mnt/archgen/MICROSCOPE/poseidon_packages/${batch_name}/pileupcaller.*
         ## Remove trailing .txt from path names. Needed for loading the data into R with admixr.
         sed -i -e 's/.txt$//' /mnt/archgen/MICROSCOPE/poseidon_packages/${batch_name}/POSEIDON.yml
         rename -f -e 's/.txt$//' /mnt/archgen/MICROSCOPE/poseidon_packages/${batch_name}/${batch_name}*txt
@@ -57,7 +57,7 @@ for seq_batch in $(find /mnt/archgen/MICROSCOPE/eager_outputs/* -maxdepth 0 ! -p
 
 
     ## If no single stranded genotypes exist, use double stranded library data for genotypes instead.
-    elif [[ (${force} == "TRUE" && -f ${seq_batch}/genotyping/pileupcaller.double.geno.txt) || (${seq_batch}/genotyping/pileupcaller.double.geno.txt -nt /mnt/archgen/MICROSCOPE/poseidon_packages/${batch_name}/POSEIDON.yml) ]]; then
+    elif [[ (${force} == "TRUE" && -f ${seq_batch}/genotyping/pileupcaller.double.geno) || (${seq_batch}/genotyping/pileupcaller.double.geno -nt /mnt/archgen/MICROSCOPE/poseidon_packages/${batch_name}/POSEIDON.yml) ]]; then
         update_switch="on"
         update_batches+="${batch_name} " ## add batch to janno update list
         echo -e "${Yellow}DSLib found for ${batch_name}${Normal}"
@@ -71,17 +71,18 @@ for seq_batch in $(find /mnt/archgen/MICROSCOPE/eager_outputs/* -maxdepth 0 ! -p
         trident init \
             --inFormat EIGENSTRAT \
             --snpSet 1240K \
-            --genoFile /mnt/archgen/MICROSCOPE/eager_outputs/${batch_name}/genotyping/pileupcaller.double.geno.txt \
-            --snpFile /mnt/archgen/MICROSCOPE/eager_outputs/${batch_name}/genotyping/pileupcaller.double.snp.txt \
-            --indFile /mnt/archgen/MICROSCOPE/eager_outputs/${batch_name}/genotyping/pileupcaller.double.ind.txt \
+            --genoFile /mnt/archgen/MICROSCOPE/eager_outputs/${batch_name}/genotyping/pileupcaller.double.geno \
+            --snpFile /mnt/archgen/MICROSCOPE/eager_outputs/${batch_name}/genotyping/pileupcaller.double.snp \
+            --indFile /mnt/archgen/MICROSCOPE/eager_outputs/${batch_name}/genotyping/pileupcaller.double.ind \
             -o /mnt/archgen/MICROSCOPE/poseidon_packages/${batch_name} \
             -n ${batch_name}
 
         sed -i -e ${regex} /mnt/archgen/MICROSCOPE/poseidon_packages/${batch_name}/POSEIDON.yml
-        rename -f -e ${regex} /mnt/archgen/MICROSCOPE/poseidon_packages/${batch_name}/pileupcaller.*.txt
+        rename -f -e ${regex} /mnt/archgen/MICROSCOPE/poseidon_packages/${batch_name}/pileupcaller.*
         ## Remove trailing .txt from path names. Needed for loading the data into R with admixr.
-        sed -i -e 's/.txt$//' /mnt/archgen/MICROSCOPE/poseidon_packages/${batch_name}/POSEIDON.yml
-        rename -f -e 's/.txt$//' /mnt/archgen/MICROSCOPE/poseidon_packages/${batch_name}/${batch_name}*txt
+        ## DEPRECATED 01/11/2022. Update of eager to v 2.4.5 means pileupcaller output no longer has txt suffix
+        # sed -i -e 's/.txt$//' /mnt/archgen/MICROSCOPE/poseidon_packages/${batch_name}/POSEIDON.yml
+        # rename -f -e 's/.txt$//' /mnt/archgen/MICROSCOPE/poseidon_packages/${batch_name}/${batch_name}*txt
 
         ## Also make plink format dataset (needed for READ)
         trident genoconvert -d /mnt/archgen/MICROSCOPE/poseidon_packages/${batch_name} --outFormat PLINK
