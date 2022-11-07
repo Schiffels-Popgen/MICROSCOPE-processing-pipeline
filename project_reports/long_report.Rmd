@@ -243,6 +243,11 @@ RMariaDB::dbDisconnect(con)
 
 ```{r print coverage_sexdet_arch_id table, echo=FALSE, message=FALSE}
 sex_det_pandora <- full_join(sex_det, pandora_data, by="Sample")
+  ## If the data is ssDNA, add the _ss suffix to the sample names (more consistent with rest of report)
+  if ( keep_only == "singlestrand") {
+    sex_det_pandora <-   sex_det_pandora %>% mutate(Sample=paste0(Sample,"_ss"))
+  }
+
 snp_cov_sex_pandora <- full_join(snp_cov, sex_det_pandora, by="Sample") %>% select(`Sample`, `Archaeological ID`, `Genetic Sex`, `# SNPs Covered`, `Out of a maximum of`) %>%
   arrange(Sample)
 
@@ -256,7 +261,7 @@ The following figure shows the relative coverage of each individual on the X and
 
 ```{r sexdet plot, echo=FALSE, fig.height=7, fig.width=6, message=FALSE, warning=FALSE}
 sex_det <- read_tsv(params$sex_det_file, col_names=c("#Sample", "#SnpsAut", "#SNPsX", "#SnpsY", "NrAut", "NrX", "NrY", "x-rate", "y-rate", "Err(x-rate)", "Err(y-rate)"), col_types='ciiiiiidddd', skip=1) %>%
-  separate(`#Sample`, into=c("Sample"), sep="[._]", extra='drop') %>%
+  separate(`#Sample`, into=c("Sample"), sep="_lib|\\.", extra='drop') %>%
   mutate(xmin=`x-rate`-`Err(x-rate)`,
          xmax=`x-rate`+`Err(x-rate)`,
          ymin=`y-rate`-`Err(y-rate)`,
