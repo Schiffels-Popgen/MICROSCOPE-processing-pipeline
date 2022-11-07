@@ -227,26 +227,29 @@ keep_only <- ifelse(
 ## Load and parse sex determination stats.
 sex_det <- read_tsv(params$sex_det_file, col_names=c("#Sample", "#SnpsAut", "#SNPsX", "#SnpsY", "NrAut", "NrX", "NrY", "x-rate", "y-rate"), col_types='ciiiiiidd', skip=1) %>%
   filter(grepl(keep_only, `#Sample`)) %>% ## When both ssDNA and dsDNA libraries exist, only keep the strandedness of interest
-  separate(`#Sample`, into=c("Sample"), sep="[._]", extra='drop') %>%
+  separate(`#Sample`, into=c("Sample"), sep="_lib|\\.", extra='drop') %>%
   select(`Sample`, `x-rate`, `y-rate`) %>%
-  infer_sex(sex_cutoffs=sex_cutoffs)
+  infer_sex(sex_cutoffs=sex_cutoffs) %>%
+  ## Add column with pandora ID for joining with Pandora table
+  separate(`Sample`, into=c("Pandora_Ind_Id"), sep="_", extra='drop', remove = F)
+
 ```
 
 ```{r arch_IDs from pandora, message=FALSE, include=FALSE}
 ## Load ArchIDs from pandora using sidora
 pandora_data <- get_df("TAB_Individual", con) %>%
-  filter(`individual.Full_Individual_Id` %in% sex_det$Sample) %>%
+  filter(`individual.Full_Individual_Id` %in% sex_det$Pandora_Ind_Id) %>%
   select(`individual.Full_Individual_Id`, `individual.Archaeological_ID`) %>%
-  rename("Sample" = `individual.Full_Individual_Id`, "Archaeological ID" = `individual.Archaeological_ID`)
+  rename("Pandora_Ind_Id" = `individual.Full_Individual_Id`, "Archaeological ID" = `individual.Archaeological_ID`)
 RMariaDB::dbDisconnect(con)
 ```
 
 ```{r print coverage_sexdet_arch_id table, echo=FALSE, message=FALSE}
-sex_det_pandora <- full_join(sex_det, pandora_data, by="Sample")
-  ## If the data is ssDNA, add the _ss suffix to the sample names (more consistent with rest of report)
-  if ( keep_only == "singlestrand") {
-    sex_det_pandora <-   sex_det_pandora %>% mutate(Sample=paste0(Sample,"_ss"))
-  }
+sex_det_pandora <- full_join(sex_det, pandora_data, by="Pandora_Ind_Id")
+  # ## If the data is ssDNA, add the _ss suffix to the sample names (more consistent with rest of report)
+  # if ( keep_only == "singlestrand") {
+  #   sex_det_pandora <-   sex_det_pandora %>% mutate(Sample=paste0(Sample,"_ss"))
+  # }
 
 snp_cov_sex_pandora <- full_join(snp_cov, sex_det_pandora, by="Sample") %>% select(`Sample`, `Archaeological ID`, `Genetic Sex`, `# SNPs Covered`, `Out of a maximum of`) %>%
   arrange(Sample)
@@ -298,7 +301,7 @@ pull_arch_id <- function(pandora_data, IID) {
   x <- NULL
   for (iid in IID){
     x <- c(x,dplyr::case_when(
-      iid %in% pandora_data$Sample ~ pandora_data %>% filter(`Sample` == iid) %>% pull(`Archaeological ID`),
+      iid %in% pandora_data$Pandora_Ind_Id ~ pandora_data %>% filter(`Pandora_Ind_Id` == iid) %>% pull(`Archaeological ID`),
       TRUE ~ NA_character_
     ))
   }
@@ -310,7 +313,12 @@ if (file.exists(params$read_results_fn) && file.exists(params$read_plot_fn)) {
   read_results <- read_tsv(params$read_results_fn, col_types = 'ccdd') %>%
     mutate(
       IndA_ID = substr(PairIndividuals, 0,6),
-      IndB_ID = substr(PairIndividuals, 7,12),
+      ## If ssDNA data, the _ss suffix is present so ind2 id is shifted over a few characters.
+      IndB_ID = case_when(
+        keep_only == 'doublestrand' ~ substr(PairIndividuals, 7,12),
+        keep_only == 'singlestrand' ~ substr(PairIndividuals, 10,15),
+        TRUE ~ NA_character_
+      ),
       IndA_Arch.ID = pull_arch_id(pandora_data, IndA_ID),
       IndB_Arch.ID = pull_arch_id(pandora_data, IndB_ID)
     ) %>%
