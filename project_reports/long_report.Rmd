@@ -313,12 +313,9 @@ if (file.exists(params$read_results_fn) && file.exists(params$read_plot_fn)) {
   read_results <- read_tsv(params$read_results_fn, col_types = 'ccdd') %>%
     mutate(
       IndA_ID = substr(PairIndividuals, 0,6),
-      ## If ssDNA data, the _ss suffix is present so ind2 id is shifted over a few characters.
-      IndB_ID = case_when(
-        keep_only == 'doublestrand' ~ substr(PairIndividuals, 7,12),
-        keep_only == 'singlestrand' ~ substr(PairIndividuals, 10,15),
-        TRUE ~ NA_character_
-      ),
+      ## Because ssDNA-only data was not reprocessed, cannot infer ind IDs usinf `keep_only`. 
+      ## Instead make agnostic inference by removing all `_ss` from second ind ID.
+      IndB_ID = substr(PairIndividuals, 7, nchar(PairIndividuals)) %>% gsub("_ss", '', .),
       IndA_Arch.ID = pull_arch_id(pandora_data, IndA_ID),
       IndB_Arch.ID = pull_arch_id(pandora_data, IndB_ID)
     ) %>%
@@ -335,6 +332,7 @@ if (file.exists(params$read_results_fn) && file.exists(params$read_plot_fn)) {
 \newif\ifkinship
   \newif\ifnada
 \kinship`r ifelse(show_kinship, 'true', 'false')`
+\nada`r ifelse(nothing_to_show, 'true', 'false')`
 \ifkinship
 
 The following table shows all the genetic relationships identified between the individuals presented in this report. The pair of related individuals, their respective archaeological IDs (if any), as well as the inferred genetic relationship is shown. Any pairs of individuals not in the table lack any evidence of genetic kinship to the limit of our resolution. The two final columns capture the confidence of the proposed relationship, by comparing if the proposed relationship is significantly more likely than the relationship that is further by one degree (`Z_upper`), and the relationship that is closer by one degree (`Z_lower`). ZScores below 3 are not statistically significant (p>0.01).
@@ -346,7 +344,6 @@ read_results %>% kable(longtable = TRUE, format.args=list(big.mark = ',')) %>% k
 ```
 ![read_plot](`r params$read_plot_fn`)
 \else
-  \nada`r ifelse(nothing_to_show, 'true', 'false')`
   \ifnada
 Not enough individuals with high enough SNP coverage are available for this analysis. Genetic kinship analysis requires a minimum of 2 individuals with sufficient SNP coverage.
   \else
