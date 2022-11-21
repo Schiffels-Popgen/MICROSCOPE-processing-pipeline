@@ -121,8 +121,10 @@ if [[ ${force_update_switch} == "TRUE" || ${update_switch} == "on" ]]; then
         ## If one and only one file matching *single*geno* exists in the genotyping dir of the eager output for the batch, then prefer single stranded data.
         if existsExactlyOne ${eager_result_dir}/genotyping/*single*geno*; then
             library_preference='single'
+            ss_suffix='-S _ss'
         else
             library_preference='double'
+            ss_suffix=''
         fi
 
         ## Run eager2poseidon
@@ -133,7 +135,8 @@ if [[ ${force_update_switch} == "TRUE" || ${update_switch} == "on" ]]; then
             --credentials ~/Software/github/Schiffels-Popgen/MICROSCOPE-processing-pipeline/.credentials \
             --genotypePloidy haploid \
             --snp_cutoff 100 \
-            --keep_only ${library_preference}" | tr -s " "
+            --keep_only ${library_preference}" \
+            ${ss_suffix} | tr -s " "
         
         ~/Software/github/sidora-tools/eager2poseidon/exec/eager2poseidon.R \
             --input_janno ${temp_janno} \
@@ -142,7 +145,8 @@ if [[ ${force_update_switch} == "TRUE" || ${update_switch} == "on" ]]; then
             --credentials ~/Software/github/Schiffels-Popgen/MICROSCOPE-processing-pipeline/.credentials \
             --genotypePloidy haploid \
             --snp_cutoff 100 \
-            --keep_only ${library_preference}
+            --keep_only ${library_preference}\
+            ${ss_suffix}
         
         ## Keep original janno just as backup.
         mv ${janno_f} ${janno_f}.old
