@@ -49,7 +49,7 @@ fi
 Red='\033[1;31m'$(tput bold) ## Red bold face
 Yellow=$(tput sgr0)'\033[1;33m' ## Yellow normal face
 
-for poseidon_input in /mnt/archgen/MICROSCOPE/poseidon_packages/*[!remote]; do
+for poseidon_input in /mnt/archgen/MICROSCOPE/poseidon_packages/[!remote]*; do
     batch_name=$(basename ${poseidon_input})
     ## Set output directory name from poseidon input name
     automated_analysis_output_dir="/mnt/archgen/MICROSCOPE/automated_analysis/"
