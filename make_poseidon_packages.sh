@@ -128,6 +128,8 @@ if [[ ${force_update_switch} == "TRUE" || ${update_switch} == "on" ]]; then
         fi
 
         ## Run eager2poseidon
+        ##  Requires poseidonR from this version. Newer version clashes with something ##  remotes::install_github('poseidon-framework/poseidonR', ref='99f1e9c9954d9b7e79e796c24e90036f2576a112')
+
         echo "~/Software/github/sidora-tools/eager2poseidon/exec/eager2poseidon.R \
             --input_janno ${temp_janno} \
             --eager_tsv /mnt/archgen/MICROSCOPE/eager_inputs/${batch}.eager_input.tsv \
