@@ -94,19 +94,20 @@ for poseidon_input in /mnt/archgen/MICROSCOPE/poseidon_packages/[!remote]*; do
             echo "${batch_name} needs reprocessing."
             continue
         fi
-        if [[ ${user_reply} != "Y" ]]; then 
+    if [[ ! ${user_reply} =~ ^(Y|N)$ ]]; then 
             unset user_reply
             echo -e "${Yellow}Output directory for batch ${Red}${batch_name}${Yellow} already exists, but some of the output files are outdated.$(tput sgr0)" ## '$(tput sgr0) returns to normal printing after the line is done
             echo "If a nextflow run for that batch did not complete successfully and was killed, I can try to resume that run from where it failed."
             echo """Would you like me to try?
             [y]es
             [n]o
-            [Y]es to all"""
+            [Y]es to all
+            [N]o to all"""
             read user_reply
         fi
         ## Ensure user reply is in expected format. Only "y" or "n" allowed.
-        while ! [[ "${user_reply}" =~ ^(y|n|Y)$ ]]; do
-            echo "Unrecognised input. [y/n/Y]"
+        while ! [[ "${user_reply}" =~ ^(y|n|Y|N)$ ]]; do
+            echo "Unrecognised input. [y/n/Y/N]"
             read user_reply
         done
         if [[ ${user_reply} =~ ^(y|Y)$ ]]; then
