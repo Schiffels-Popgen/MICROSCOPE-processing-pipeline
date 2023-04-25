@@ -98,6 +98,20 @@ Contact lamnidis@shh.mpg.de if you think the library protocol stated could be au
   return(c(strandedness, udg_treatment))
 }
 
+## Helper function that corrects erroneous Capture ID for SG data. Should be applied to singular capture IDs.
+##  Additional shotgun should be denoted as SG1.2, not SG2.1, but the latter sometimes appears.
+##  By setting all SG seqIDs to SG1, deduplication of deeper shotgun will always work as intended.
+correct_sg_capture_ids <- function(x) {
+  ## If the capture ID ends in .SG, followed by one or more digits and nothing else
+  if ( stringr::str_detect(x, "^.*\\.SG[:digit:]+$") ) {
+    ## Replace .SG[:digit:]+$ with ".SG1". works specifically for capture IDs.
+    new_string <- stringr::str_replace(x, "\\.SG[:digit:]+$", ".SG1")
+  } else {
+    new_string <- x
+  }
+  new_string
+}
+
 ## Main function that queries pandora, formats info and spits out a table with the necessary information for eager.
 collect_and_format_info<- function(query_list_seq, con) {
   ## Get complete pandora table
@@ -148,6 +162,7 @@ collect_and_format_info<- function(query_list_seq, con) {
     rename(Sample_Name=individual.Full_Individual_Id, Library_ID=capture.Full_Capture_Id,) %>%
     ## Append '_ss' suffix to Sample ID in Sample ID and Library ID for single stranded data. Latter is important for sorting in MQC.
     mutate(
+      Library_ID = purrr::map_chr(Library_ID, function(capture_id) {correct_sg_capture_ids(capture_id)}),
       Sample_Name = ifelse(Strandedness == 'single', paste0(Sample_Name, "_ss"), Sample_Name),
       Library_ID = if_else(Strandedness == 'single', sub("\\.", "_ss.", Library_ID), Library_ID)
     ) %>%
