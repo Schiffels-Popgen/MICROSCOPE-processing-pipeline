@@ -129,6 +129,7 @@ if [[ ${force_update_switch} == "TRUE" || ${update_switch} == "on" ]]; then
 
         ## Run eager2poseidon
         ##  Requires poseidonR from this version. Newer version clashes with something ##  remotes::install_github('poseidon-framework/poseidonR', ref='99f1e9c9954d9b7e79e796c24e90036f2576a112')
+        ## TODO: Fix eager2poseidon so it keeps additional columns found in the input janno >:(
 
         echo "~/Software/github/sidora-tools/eager2poseidon/exec/eager2poseidon.R \
             --input_janno ${temp_janno} \
@@ -163,7 +164,7 @@ if [[ ${force_update_switch} == "TRUE" || ${update_switch} == "on" ]]; then
             group_name_col=$(head -n1 ${janno_f} | tr '\t' '\n' | grep -n 'Group_Name' | cut -d':' -f1)
             alt_id_col=$(head -n1 ${janno_f} | tr '\t' '\n' | grep -n 'Alternative_IDs' | cut -d':' -f1)
             note_field_col=$(head -n1 ${janno_f} | tr '\t' '\n' | grep -wn 'Note' | cut -d':' -f1)
-            ## WARNING: Poseidon 2.5.0 packages do not have Relation_* fields. In future, the code below can identify existing fields for updating in poseidon 2.7.0+ packages.
+            ## WARNING: jannos output by eager2poseidon do not have Relation_* fields. In future, the code below can identify existing fields for updating these columns.
             # relation_degree_col=$(head -n1 ${janno_f} | tr '\t' '\n' | grep -n 'Relation_Degree' | cut -d':' -f1)
             # relation_to_col=$(head -n1 ${janno_f} | tr '\t' '\n' | grep -n 'Relation_To' | cut -d':' -f1)
             merge_these=()
