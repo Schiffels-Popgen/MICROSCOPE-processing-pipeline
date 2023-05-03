@@ -4,32 +4,35 @@ Code for the standard data processing pipeline for the ERC project MICROSCOPE
 ## Available scripts in approximate order of operation
 ```
 .
-├── seqIds2Eager2.sh               ## Wrapper that applies query_pandora_for_data.R to each unprocessed sequencing batch
-├── query_pandora_for_data.R       ## Queries PANDORA to collect sample, library and sequencing information in an TSV
-├── run_Eager.sh                   ## Wrapper that runs/resumes eager for each unprocessed sequencing run
-├── MICROSCOPE.config              ## Configuration file for eager runs. contains all parameters for the eager runs
-├── create_preliminary_reports.sh  ## Wrapper that knits the preliminary report for each newly processed eager run
-├── make_poseidon_packages.sh      ## Makes a poseidon package per batch using info form PANDORA and the batch genotypes
-├── site_ids_to_names.R            ## Queries PANDORA for site Ids and names and creates an auxilliary file
+├── seqIds2Eager2.sh                   ## Wrapper that applies query_pandora_for_data.R to each unprocessed sequencing batch
+├── merge_data_from_identical_twins.sh ## If identical individuals are flagged for a batch, creates the required symlinks and updates the TSV to duplicate and merge individual data.
+├── query_pandora_for_data.R           ## Queries PANDORA to collect sample, library and sequencing information in an TSV
+├── run_Eager.sh                       ## Wrapper that runs/resumes eager for each unprocessed sequencing run
+├── MICROSCOPE.config                  ## Configuration file for eager runs. contains all parameters for the eager runs
+├── create_preliminary_reports.sh      ## Wrapper that knits the preliminary report for each newly processed eager run
+├── make_poseidon_packages.sh          ## Makes a poseidon package per batch using info form PANDORA and the batch genotypes
+├── site_ids_to_names.R                ## Queries PANDORA for site Ids and names and creates an auxillary file
 ├── plink_mds
-│   ├── west_eurasian_poplist.txt  ## List of West Eurasian populations for forging the pca package.
-│   ├── forge_pca_package.sh       ## Create forge list and forge PCA poseidon package.
-│   └── plink_pca.sh               ## Use plink to calculate pairwise distances between all individuals.
-├── automated_analysis.nf          ## Nextflow pipeline for each analysis that needs to be ran per batch.
-├── create_long_reports.sh         ## Wrapper that knits the extended preliminary report for each newly processed eager run
+│   ├── west_eurasian_poplist.txt      ## List of West Eurasian populations for forging the pca package.
+│   ├── forge_pca_package.sh           ## Create forge list and forge PCA poseidon package.
+│   └── plink_pca.sh                   ## Use plink to calculate pairwise distances between all individuals.
+├── automated_analysis.nf              ## Nextflow pipeline for each analysis that needs to be ran per batch.
+├── create_long_reports.sh             ## Wrapper that knits the extended preliminary report for each newly processed eager run
 └── project_reports
     ├── assets
-    │   └── bg_annotation.txt      ## Annotation info for west Eurasian bg PCA pops.
-    ├── knit_preliminary_report.R  ## Finds the correct input files to knit the preliminary report for a batch
-    ├── preliminary_report.Rmd     ## The preliminary report template file
-    ├── knit_long_report.R         ## Finds the correct input files to knit the extended preliminary report for a batch
-    └── long_report.Rmd            ## The extended preliminary report template file
+    │   └── bg_annotation.txt          ## Annotation info for west Eurasian bg PCA pops.
+    ├── knit_preliminary_report.R      ## Finds the correct input files to knit the preliminary report for a batch
+    ├── preliminary_report.Rmd         ## The preliminary report template file
+    ├── knit_long_report.R             ## Finds the correct input files to knit the extended preliminary report for a batch
+    └── long_report.Rmd                ## The extended preliminary report template file
 
 ```
 
 ## seqIds2Eager2.sh
 Requires no command-line arguments. Will read sequence IDs from each file from the sequencing batch directory and
 run `query_pandora_for_data.R` on any batch files that have not yet been process, or have been updated since processing.
+If a duplicate individual/identical twin annotation file exists for a batch, `merge_data_from_identical_twins.sh` is
+applied to the created TSV.
 
 #### query_pandora_for_data.R
 ```
@@ -42,6 +45,18 @@ Options:
 
 ```
 Requires the correct `.credentials` file. Option `-r` not provided by `seqIds2Eager2` at present.
+
+#### merge_data_from_identical_twins.sh
+```
+usage: merge_data_from_identical_twins.sh <input_eager_tsv> <identical_twins_tsv>
+```
+
+This shell script will read through the identical twins annotation file of a batch and create symbolic links for the
+R1/R2 columns of the `merge_this` individual, then duplicate the rows of the individual in the merge_this column, and
+replace the individual ID with the one in the `into_this` column, and the R1/R2 columns with the symlinks created above.
+
+A copy of the input TSV file will be kept as backup with the added extension `.bak`, while the edited TSV will replace
+file in the input path.
 
 ## run_Eager.sh
 If no output from a completed nf-core/eager run is found for a batch (i.e. a MultiQC report html), runs eager on the batch.
@@ -118,12 +133,15 @@ Options:
 ```
 
 ## make_poseidon_packages.sh
- > ⚠️ This script and its helpers are a work in progress and will eventually be replaced by a script that includes PANDORA queries for information.
-
 Compares the creation time of the genotype dataset in the eager output and the `POSEIDON.yml` of a batch to determine which
 poseidon packages need creating/updating. Those pacakges will be recreated from scratch with `trident init`. For batches
 that contain genotypes from both ssDNA and dsDNA libraries, the **ssDNA libraries are preferred and dsDNA genotypes are ignored**!
-Through under the hood calls to `site_ids_to_names.R`, Site names and IDs are pulled from PANDORA, and added to the package janno file.
+The package janno files are then updated using `eager2poseidon` and `sidora.core` under the hood. If an identical twins annotation file
+exists for the batch, the janno file is updated to reflect this. Specifically:
+ - The `Group_Name` of `merge_this` individuals is updated to reflect that their data is included in another Poseidon ID.
+ - The `Alternative_IDs` and `Note` fields of `into_this` individuals are updated to clarify that this individual actually contains the data of the `merge_this` individual as well.
+
+The `.fam` and `.ind` files in the package are then also updated with the `Genetic_Sex` and `Group_Name` information of the `.janno` file.
 
 ## forge_pca_package.sh
 Checks if any poseidon packages have been updated since the last forge and reforges the package to include latest genotype data from each batch.
