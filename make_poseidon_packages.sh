@@ -154,10 +154,83 @@ if [[ ${force_update_switch} == "TRUE" || ${update_switch} == "on" ]]; then
         mv ${janno_f} ${janno_f}.old
         mv ${temp_janno} ${janno_f}
 
+        ## If an identical twin annotation file exists for the batch, then update the Alternative_ID field of the `into_this` individual in the janno file to denote it contains data for both Pandora IDs,
+        ##   and rename the population field of the merge_this individual so the data is not in the population twice.
+        if [[ -f /mnt/archgen/MICROSCOPE/identical_twins_per_batch/${batch}.identical_twins.tsv ]]; then
+            echo -e "${Yellow}${batch}:  Marking identical twins/duplicate individuals in janno file ${Normal}"
+
+            ## Infer the index of the Group_Name and Alternative_ID columns in the janno file
+            group_name_col=$(head -n1 ${janno_f} | tr '\t' '\n' | grep -n 'Group_Name' | cut -d':' -f1)
+            alt_id_col=$(head -n1 ${janno_f} | tr '\t' '\n' | grep -n 'Alternative_IDs' | cut -d':' -f1)
+            note_field_col=$(head -n1 ${janno_f} | tr '\t' '\n' | grep -wn 'Note' | cut -d':' -f1)
+            ## WARNING: Poseidon 2.5.0 packages do not have Relation_* fields. In future, the code below can identify existing fields for updating in poseidon 2.7.0+ packages.
+            # relation_degree_col=$(head -n1 ${janno_f} | tr '\t' '\n' | grep -n 'Relation_Degree' | cut -d':' -f1)
+            # relation_to_col=$(head -n1 ${janno_f} | tr '\t' '\n' | grep -n 'Relation_To' | cut -d':' -f1)
+            merge_these=()
+            into_these=()
+
+            while read -r merge_this into_this; do
+                ## Skip header
+                if [[ ${merge_this} == "merge_this" ]]; then
+                    continue
+                fi
+                ## Create bash array with all entries in the merge_this and into_this columns
+                merge_these+=("${merge_this}")
+                into_these+=("${into_this}")
+            done < /mnt/archgen/MICROSCOPE/identical_twins_per_batch/${batch}.identical_twins.tsv
+
+            ## Pass the full arrays to awk and update the janno file
+            ## WARNING This awk command will not pick up on triplets of identical individuals. one individual will be lost in the Janno.
+            awk \
+                -v group_name_col="${group_name_col}" \
+                -v alt_id_col="${alt_id_col}" \
+                -v merge_these="${merge_these[*]}" \
+                -v into_these="${into_these[*]}" \
+                -v note_field_col="${note_field_col}" \
+                -v n="${#merge_these[@]}"\
+                -F "\t" \
+                -v OFS="\t" \
+                '
+                    BEGIN{
+                        split(merge_these,a," ")
+                        split(into_these ,b," ")
+                        for (x=1;x<=n;++x) { 
+                            tsv_merge_this[a[x]]=a[x]
+                            tsv_into_this[b[x]]=b[x]
+                            merged_into[a[x]]=b[x]
+                            merged_from[b[x]]=a[x]
+                            }
+
+                        }
+                    ## With identical indivs TSV looking like this:
+                    ## merge_this into this
+                    ## ABC001   ABC002
+                    ## 
+                    ## tsv_merge_this = ["ABC001" : "ABC001" ]
+                    ## tsv_into_this  = ["ABC002" : "ABC002" ]
+                    ## merged_into    = ["ABC001" : "ABC002" ]
+                    ## merged_from    = ["ABC002" : "ABC001" ]
+
+                    { 
+                        if ( $1 in tsv_merge_this ) { 
+                            $group_name_col = $group_name_col"_data_merged_into_"merged_into[$1]
+                        } else if ( $1 in tsv_into_this ) {
+                            $alt_id_col = $1"_"merged_from[$1]"_merged"
+                            $note_field_col = "This Poseidon_ID contains the merged data from identical individuals "$1" and "merged_from[$1]"."
+                        }
+                        print $0 
+                    }
+                ' ${janno_f} > ${janno_f}.2
+            
+            ## Replace origianl janno file with updated version
+            mv ${janno_f}.2 ${janno_f}
+        fi
+
         echo -e "${Yellow}${batch}:  Adding genetic sex to fam and ind files ${Normal}"
         ## Update genetic sex in .fam file based on sexes in janno file
         mv ${fam_f} ${fam_f}.old ## Keep old fam file around for testing
         ## First paste together the fam and janno files, throw away the header line, then use awk to update the sex in the fam file based on the janno file
+        ## Additionally, replace the group name in the fam file ($1) with the new Group_Name in the janno file ($9)
         ## Results are saved to ${fam_f}
         (echo ""; cat ${fam_f}.old) | \
             paste - <( awk -F "\t" -v OFS="\t" '{print $1,$2,$3}' ${janno_f}) | \
@@ -167,9 +240,9 @@ if [[ ${force_update_switch} == "TRUE" || ${update_switch} == "on" ]]; then
                     $5=1
                 } else if ($8 == "F") {
                     $5=2
-                }; print $1, $2, $3, $4, $5, $6}' > ${fam_f}
+                }; print $9, $2, $3, $4, $5, $6}' > ${fam_f}
 
-        ## Update genetic sex in .ind files
+        ## Update genetic sex and group name in .ind files
         mv ${ind_f} ${ind_f}.old
         awk -F "\t" -v OFS="\t" '{print $1,$2,$3}' ${janno_f} | tail -n +2 >${ind_f}
 
