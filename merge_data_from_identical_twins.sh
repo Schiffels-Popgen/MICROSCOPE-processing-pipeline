@@ -51,8 +51,8 @@ while read -r merge_this into_this; do
       fi
     done
 
-    ## Duplicate the rows of the individual in the merge_this column, and replace the individual ID with the one in the into_this column, and the R1/R2 columns with the symlinks created above.
-    echo -e "${data_target_ind}\t${library_id}\t${lane}\t${colour_chemistry}\t${seqtype}\t${organism}\t${strandedness}\t${udg_treatment}\t${new_r1}\t${new_r2}\t${new_bam}" >> ${temp_tsv}
+    ## Duplicate the rows of the individual in the merge_this column, and replace the individual ID with the one in the into_this column, prefix the library_ID with the target Individual ID, and replace the R1/R2 columns with the symlinks created above.
+    echo -e "${data_target_ind}\t${data_target_ind}_${library_id}\t${lane}\t${colour_chemistry}\t${seqtype}\t${organism}\t${strandedness}\t${udg_treatment}\t${new_r1}\t${new_r2}\t${new_bam}" >> ${temp_tsv}
 
   done < <(awk -v merge_this="${merge_this}" 'BEGIN{OFS=IFS="\t"} $1 == merge_this || $1 == merge_this"_ss"' ${input_eager_tsv})
   
