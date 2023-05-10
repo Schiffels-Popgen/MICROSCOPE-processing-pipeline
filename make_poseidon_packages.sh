@@ -129,7 +129,6 @@ if [[ ${force_update_switch} == "TRUE" || ${update_switch} == "on" ]]; then
 
         ## Run eager2poseidon
         ##  Requires poseidonR from this version. Newer version clashes with something ##  remotes::install_github('poseidon-framework/poseidonR', ref='99f1e9c9954d9b7e79e796c24e90036f2576a112')
-        ## TODO: Fix eager2poseidon so it keeps additional columns found in the input janno >:(
 
         echo "~/Software/github/sidora-tools/eager2poseidon/exec/eager2poseidon.R \
             --input_janno ${temp_janno} \
@@ -262,7 +261,13 @@ if [[ ${force_update_switch} == "TRUE" || ${update_switch} == "on" ]]; then
         ## Then update the hashes in POSEIDON.yml
         trident update -d $(dirname ${ind_f})
 
-        echo -e "${Yellow}${batch}:  Package '${batch}' processed.${Normal}"
+        ## Finally, validate the produced package
+        trident validate -d /mnt/archgen/MICROSCOPE/poseidon_packages/${batch_name}
+        if [[ $? != 0 ]]; then
+            echo -e "${Red}${batch}:  Package '${batch}' failed validation. Halting execution.${Normal}"
+        else
+            echo -e "${Yellow}${batch}:  Package '${batch}' processed.${Normal}"
+        fi
     done
 else
     echo "No packages needed updating. Halting execution."
