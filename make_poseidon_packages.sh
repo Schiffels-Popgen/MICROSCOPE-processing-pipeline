@@ -164,9 +164,10 @@ if [[ ${force_update_switch} == "TRUE" || ${update_switch} == "on" ]]; then
             group_name_col=$(head -n1 ${janno_f} | tr '\t' '\n' | grep -n 'Group_Name' | cut -d':' -f1)
             alt_id_col=$(head -n1 ${janno_f} | tr '\t' '\n' | grep -n 'Alternative_IDs' | cut -d':' -f1)
             note_field_col=$(head -n1 ${janno_f} | tr '\t' '\n' | grep -wn 'Note' | cut -d':' -f1)
-            ## WARNING: jannos output by eager2poseidon do not have Relation_* fields. In future, the code below can identify existing fields for updating these columns.
-            # relation_degree_col=$(head -n1 ${janno_f} | tr '\t' '\n' | grep -n 'Relation_Degree' | cut -d':' -f1)
-            # relation_to_col=$(head -n1 ${janno_f} | tr '\t' '\n' | grep -n 'Relation_To' | cut -d':' -f1)
+            relation_to_col=$(head -n1 ${janno_f} | tr '\t' '\n' | grep -wn 'Relation_To' | cut -d':' -f1)
+            relation_degree_col=$(head -n1 ${janno_f} | tr '\t' '\n' | grep -wn 'Relation_Degree' | cut -d':' -f1)
+            relation_note_col=$(head -n1 ${janno_f} | tr '\t' '\n' | grep -wn 'Relation_Note' | cut -d':' -f1)
+
             merge_these=()
             into_these=()
 
@@ -188,6 +189,9 @@ if [[ ${force_update_switch} == "TRUE" || ${update_switch} == "on" ]]; then
                 -v merge_these="${merge_these[*]}" \
                 -v into_these="${into_these[*]}" \
                 -v note_field_col="${note_field_col}" \
+                -v relation_to_col="${relation_to_col}" \
+                -v relation_degree_col="${relation_degree_col}" \
+                -v relation_note_col="${relation_note_col}" \
                 -v n="${#merge_these[@]}"\
                 -F "\t" \
                 -v OFS="\t" \
@@ -215,9 +219,16 @@ if [[ ${force_update_switch} == "TRUE" || ${update_switch} == "on" ]]; then
                     { 
                         if ( $1 in tsv_merge_this ) { 
                             $group_name_col = $group_name_col"_data_merged_into_"merged_into[$1]
+                            $relation_to_col = merged_into[$1]
+                            $relation_degree_col = "identical"
+                            $relation_note_col = "Identity of individuals was specified in identical_twins annotation file."
                         } else if ( $1 in tsv_into_this ) {
                             $alt_id_col = $1"_"merged_from[$1]"_merged"
                             $note_field_col = "This Poseidon_ID contains the merged data from identical individuals "$1" and "merged_from[$1]"."
+                            $relation_to_col = merged_from[$1]
+                            $relation_degree_col = "identical"
+                            $relation_note_col = "Identity of individuals was specified in identical_twins annotation file."
+
                         }
                         print $0 
                     }
