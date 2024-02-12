@@ -10,16 +10,16 @@ EXOC2	HIrisPlex	6	457748	rs4959270	+	A	C	darker hair/skin
 ZKSCAN3,ZSCAN31	Mathieson 2015	6	28322296	rs6903823	+	A	G	linked to Pulmonary function. Autophagy, Lung cancer
 MHC (EGFL8, PPT2-EGFL8)	Mathieson 2015	6	32132233	rs2269424	-	C	T	linked to Immunity
 TYRP1	HIrisPlex	9	12709305	rs683	+	A	C	darker skin/hair?
-FADS1	Mathieson 2015	11	61569830	rs174546	+	C	T	Nat.Am type
-FADS1	Ameur2012	11	61570783	rs174547	+	T	C	Nat Am type
-FADS1	Ameur2012	11	61571348	rs174548	+	C	G	Nat.Am type
-FADS1	Ameur2012	11	61571382	rs174549	+	G	A	Nat.Am type
-FADS1	Ameur2012	11	61571478	rs174550	+	T	C	Nat.Am type?
-FADS1	Ameur2012	11	61580635	rs174556	+	C	T	Nat.Am type
-FADS2	Fumagalli 2015	11	61597212	rs174570	+	C	T	Nat Am type. highPUFA diet
-FADS2	Ameur2012	11	61597972	rs1535	+	A	G	Nat Am type
+FADS1	Mathieson 2015	11	61569830	rs174546	+	C	T	More common in Nat.Am populations
+FADS1	Ameur2012	11	61570783	rs174547	+	T	C	More common in Nat.Am populations
+FADS1	Ameur2012	11	61571348	rs174548	+	C	G	More common in Nat.Am populations
+FADS1	Ameur2012	11	61571382	rs174549	+	G	A	More common in Nat.Am populations
+FADS1	Ameur2012	11	61571478	rs174550	+	T	C	More common in Nat.Am populations?
+FADS1	Ameur2012	11	61580635	rs174556	+	C	T	More common in Nat.Am populations
+FADS2	Fumagalli 2015	11	61597212	rs174570	+	C	T	More common in Nat.Am populations; Advantageous in high-PUFA diets
+FADS2	Ameur2012	11	61597972	rs1535	+	A	G	More common in Nat.Am populations
 FADS2	Ameur2012	11	61600342	rs174574	+	A	C	European type(?)
-FADS2	Ameur2012	11	61603510	rs174576	+	C	A	Nat Am type
+FADS2	Ameur2012	11	61603510	rs174576	+	C	A	More common in Nat.Am populations
 FADS3	Fumagalli 2015	11	61641717	rs7115739	+	T	G	European type (G almost fixed in EUR. AMR 38% T)
 DHCR7,NADSYN1	Mathieson 2015	11	71165625	rs7944926	+	A	G	Vitamin D
 GRM5	Mathieson 2015	11	88515022	rs7119749	+	A	G	Pigmentation
