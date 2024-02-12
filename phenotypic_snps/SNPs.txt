@@ -2,11 +2,11 @@ Gene	From	chr	pos	rs	strand	One allele	effect allele	Effect
 EDAR	SNPedia	2	109513601	rs3827760	-	T	C	thicker straighter hair, increased chance of shovel-shaped incisors
 MCM6, LCT	Mathieson 2015	2	136608646	rs4988235	-	T	C	lactose intolerant
 TLR1,TLR6,TLR10	Mathieson 2015	4	38815502	rs4833103	+	A	C	Immunity (lower risk of Non-Hodgkin's lymphoma)
-SLC45A2	Mathieson 2015,Hirisplex	5	33951693	rs16891982	+	C	G	Light skin; Possibly an increased risk of melanoma.
+SLC45A2	Mathieson 2015,Hirisplex	5	33951693	rs16891982	+	C	G	Generally European; Light skin; Possibly an increased risk of melanoma.
 SLC45A2	HIrisPlex	5	33958959	rs28777	+	A	C	darker hair/skin
 SLC22A4	Mathieson 2015	5	131675864	rs272872	-	C	T	Ergothionine transport?
 IRF4	HIrisPlex	6	396321	rs12203592	+	C	T	presence of freckles, brown hair and high sensitivity of skin to sun exposure.
-EXOC2	HIrisPlex	6	457748	rs4959270	+	C	A	lighter skin/hair
+EXOC2	HIrisPlex	6	457748	rs4959270	+	A	C	darker hair/skin
 ZKSCAN3,ZSCAN31	Mathieson 2015	6	28322296	rs6903823	+	A	G	linked to Pulmonary function. Autophagy, Lung cancer
 MHC (EGFL8, PPT2-EGFL8)	Mathieson 2015	6	32132233	rs2269424	-	C	T	linked to Immunity
 TYRP1	HIrisPlex	9	12709305	rs683	+	A	C	darker skin/hair?
@@ -24,7 +24,7 @@ FADS3	Fumagalli 2015	11	61641717	rs7115739	+	T	G	European type (G almost fixed i
 DHCR7,NADSYN1	Mathieson 2015	11	71165625	rs7944926	+	A	G	Vitamin D
 GRM5	Mathieson 2015	11	88515022	rs7119749	+	A	G	Pigmentation
 TYR	HIrisPlex	11	88911696	rs1042602	+	C	A	absence of freckles
-TYR	HIrisPlex	11	89011046	rs1393350	+	A	G	blonde w. blue eyes rather than brown w. green eyes
+TYR	HIrisPlex	11	89011046	rs1393350	+	A	G	brown w. green eyes rather than blonde w. blue eyes
 KITLG	HIrisPlex	12	89328335	rs12821256	+	T	C	lighter hair
 ATXN2,SH2B3	Mathieson 2015	12	112007756	rs653178	-	A	G	Celiac disease link
 ?	Mathieson 2015	13	38825900	rs1979866	+	A	C	Unknown
