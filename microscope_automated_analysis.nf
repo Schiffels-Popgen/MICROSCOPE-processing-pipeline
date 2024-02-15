@@ -230,6 +230,7 @@ process phenotypic_analysis {
 
     output:
     file("${params.batch}.phenotypes.txt")
+    file("${params.batch}.hirisplex.csv")
 
     script:
     def name_list = bam_name.flatten().join(" ")
@@ -244,5 +245,8 @@ process phenotypic_analysis {
 
     ## Check phenotypes
     ${baseDir}/phenotypic_snps/infer_phenotypes.py -a${params.phenotype_annotation} -f samplelist.txt ${params.batch}.mpileup.q30.Q30.B.txt >${params.batch}.phenotypes.txt
+
+    ## Create HIrisPlex CSV
+    ${baseDir}/phenotypic_snps/phenotypes2irisplex.py ${params.batch}.phenotypes.txt >${params.batch}.hirisplex.csv
     """
 }
