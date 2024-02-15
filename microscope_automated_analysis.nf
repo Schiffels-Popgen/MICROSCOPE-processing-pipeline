@@ -195,11 +195,25 @@ ch_bams_for_phenotypes = Channel
         //Filter out reaaaally old *.SG1.1 batches. unmerged-trimmed libs that later got merged and trimmed will still exist sadly.
         .filter {! (it[0] =~ /.*1.1.trimmed/) }
         .map{
-            sample_name = it[0].minus(".trimmed")
-            bam = it [1][0]
-            bai = it [1][1]
+            def ind_name = it[0].substring(0, 9) // 9 is the length of the individual name if it has the _ss suffix.
+            if (ind_name.endsWith("_ss")) {
+                ind_name = ind_name.substring(0, 6)
+            }
+            def sample_name = it[0].minus(".trimmed")
+            def bam = it [1][0]
+            def bai = it [1][1]
 
-            [sample_name, bam, bai]
+            [ind_name, sample_name, bam, bai]
+        }
+        // To avoid picking up older unmerged bams, we group by ind_name, then remove the sample_name/bam/bai combination that is less new.
+        .groupTuple(by: 0)
+        .map {
+            ind_name, names, bams, bais ->
+            def fileSortCondition = { it.lastModified() } // Sort by last modified date
+            newest_bam = bams.sort(fileSortCondition).reverse()[0] // Get the newest bam
+            idx = bams.indexOf(newest_bam) // Get the index of the newest bam
+
+            [names[idx], bams[idx], bais[idx]] // Return the newest bam and its corresponding name and bai
         }
         .dump(tag:"phenotypes")
 
