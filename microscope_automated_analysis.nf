@@ -246,7 +246,9 @@ process phenotypic_analysis {
     ## Check phenotypes
     ${baseDir}/phenotypic_snps/infer_phenotypes.py -a${params.phenotype_annotation} -f samplelist.txt ${params.batch}.mpileup.q30.Q30.B.txt >${params.batch}.phenotypes.txt
 
-    ## Create HIrisPlex CSV
-    ${baseDir}/phenotypic_snps/phenotypes2irisplex.py ${params.batch}.phenotypes.txt >${params.batch}.hirisplex.csv
+    ## Create HIrisPlex CSV with minimum read depth of 0, 5, and 10 per SNP.
+    ${baseDir}/phenotypic_snps/phenotypes2irisplex.py -m 0  ${params.batch}.phenotypes.txt >${params.batch}.minDepth0.hirisplex.csv
+    ${baseDir}/phenotypic_snps/phenotypes2irisplex.py -m 5  ${params.batch}.phenotypes.txt >${params.batch}.minDepth5.hirisplex.csv
+    ${baseDir}/phenotypic_snps/phenotypes2irisplex.py -m 10 ${params.batch}.phenotypes.txt >${params.batch}.minDepth10.hirisplex.csv
     """
 }
