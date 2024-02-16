@@ -16,6 +16,7 @@ def round_to_nearest_half(number):
   return round(number * 2) / 2
 
 parser = argparse.ArgumentParser(usage="%(prog)s [-h] [Input]" , description="Convert the output table of infer_phenotypes.py into an HIrisPlex compatible csv.")
+parser.add_argument("-m", "--min_count", type=int, default=0, help="A minimum required count of reads covering a SNP before a genotype call is made. SNPs with fewer than this many reads will be left as NA. Default is 1.")
 parser.add_argument("Input", type=argparse.FileType('r'), nargs="?", help="The input Phenotype table file. When no input file is given, read from stdin.")
 args = parser.parse_args()
 
@@ -104,8 +105,10 @@ for line in In:
     allele_2           = int(fields[ 6 + (sample_names.index(sample)*2) + 1 ] )
     allele_of_interest = int(fields[ 6 + (sample_names.index(sample)*2) + nudge ] )
     ## Compute the number of allele copies as twice the allele frequency after rounding to the nearest half.
-    try: 
-      results[sample][lookup_table[rsTag]] = round_to_nearest_half(allele_of_interest/sum([allele_1,allele_2])) * 2
+    try:
+      ## Only update "calls" if more than the minimum count of reads are present
+      if allele_1 + allele_2 >= args.min_count:
+        results[sample][lookup_table[rsTag]] = round_to_nearest_half(allele_of_interest/sum([allele_1,allele_2])) * 2
     except ZeroDivisionError:
       ## Result is NA if the sum of the alleles is 0
       continue
