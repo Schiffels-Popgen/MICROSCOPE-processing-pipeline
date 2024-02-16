@@ -219,7 +219,7 @@ ch_bams_for_phenotypes = Channel
 
 process phenotypic_analysis {
     tag "${params.batch}"
-    conda "bioconda::samtools=1.14"
+    conda "bioconda::samtools=1.14 conda-forge::python=3.11.3"
     publishDir "${params.outdir}/${params.batch}/phenotypes", mode: 'copy'
     memory '1GB'
     cpus 1
@@ -240,8 +240,8 @@ process phenotypic_analysis {
         echo \${name} >>samplelist.txt
     done
 
-    ## get mpileup results
-    samtools mpileup -a -Q 30 -B -q30 -l <(awk -v OFS="\t" -F "\t" '{print \$3,\$4}' ${params.phenotype_annotation} | tail -n +2) ${bams} >${params.batch}.mpileup.q30.Q30.B.txt
+    ## get mpileup results (set max depth to 100 to limit memory footprint.)
+    samtools mpileup -d 100 -a -Q 30 -B -q30 -l <(awk -v OFS="\t" -F "\t" '{print \$3,\$4}' ${params.phenotype_annotation} | tail -n +2) ${bams} >${params.batch}.mpileup.q30.Q30.B.txt
 
     ## Check phenotypes
     ${baseDir}/phenotypic_snps/infer_phenotypes.py -a${params.phenotype_annotation} -f samplelist.txt ${params.batch}.mpileup.q30.Q30.B.txt >${params.batch}.phenotypes.txt
