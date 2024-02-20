@@ -116,7 +116,9 @@ for line in In:
 ## Finally, print the output into stdout
 print(",".join(header), file=sys.stdout)
 for sample in sorted(sample_names):
-  print(sample, end=",", file=sys.stdout)
+  sample_result = ""
+  sample_result += sample + ","
   for snp in header[1:]:
-    print(results[sample][snp], end=",", file=sys.stdout)
-  print("", file=sys.stdout)
+    sample_result += str(results[sample][snp]) + ","
+  ## Remove the trailing comma and print the result
+  print(sample_result[:-1], file=sys.stdout)
