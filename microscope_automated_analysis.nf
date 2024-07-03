@@ -219,7 +219,7 @@ ch_bams_for_phenotypes = Channel
 
 process phenotypic_analysis {
     tag "${params.batch}"
-    conda "bioconda::samtools=1.14 conda-forge::python=3.11.3"
+    conda "bioconda::samtools=1.14 conda-forge::python=3.10.2"
     publishDir "${params.outdir}/${params.batch}/phenotypes", mode: 'copy'
     memory '1GB'
     cpus 1
@@ -230,7 +230,7 @@ process phenotypic_analysis {
 
     output:
     file("${params.batch}.phenotypes.txt")
-    file("${params.batch}.hirisplex.csv")
+    file("${params.batch}.*.hirisplex.csv")
 
     script:
     def name_list = bam_name.flatten().join(" ")
