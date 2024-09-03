@@ -108,7 +108,7 @@ for eager_input in /mnt/archgen/MICROSCOPE/eager_inputs/*.eager_input.tsv; do
             echo "${batch_name} needs reprocessing."
             continue
         fi
-        if [[ ${user_reply} =~ ^(Y|N)$ ]]; then 
+        if [[ ! ${user_reply} =~ ^(Y|N)$ ]]; then 
             unset user_reply
             echo -e "${Yellow}Output directory for batch ${Red}$(basename ${eager_output_dir})${Yellow} already exists, but lacks 'multiqc/multiqc_report.html', or that report is outdated.$(tput sgr0)" ## '$(tput sgr0) returns to normal printing after the line is done
             echo "If a nextflow run for that batch did not complete successfully and was killed, I can try to resume that run from where it failed."
