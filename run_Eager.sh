@@ -41,11 +41,11 @@ fi
 
 ## Set profiles based on cluster.
 if [[ $(hostname) =~ ^mpi- ]]; then
-  nextflow_profiles="shh,singularity,microscope"
+    nextflow_profiles="shh,singularity,microscope"
 elif [[ $(hostname) =~ ^cdag ]]; then
-  nextflow_profiles="cdag,shh,microscope"
+    nextflow_profiles="cdag,shh,microscope"
 elif [[ $(hostname) =~ ^bio ]]; then
-  nextflow_profiles="eva,archgen,medium_data,microscope"
+    nextflow_profiles="eva,archgen,medium_data,microscope"
 fi
 
 ## Set colour and face for colour printing
@@ -53,6 +53,10 @@ Red='\033[1;31m'$(tput bold) ## Red bold face
 Yellow=$(tput sgr0)'\033[1;33m' ## Yellow normal face
 
 for eager_input in /mnt/archgen/MICROSCOPE/eager_inputs/*.eager_input.tsv; do
+    ## Go to a stable directory to start working on the run.
+    ## This is here to ensure that we cd back to the main directory even when 'continue' breaks the loop execution.
+    cd /mnt/archgen/MICROSCOPE
+
     batch_name=$(basename ${eager_input} .eager_input.tsv)
     ## Set output directory name from eager input name
     eager_output_dir="/mnt/archgen/MICROSCOPE/eager_outputs/${batch_name}"
@@ -62,6 +66,9 @@ for eager_input in /mnt/archgen/MICROSCOPE/eager_inputs/*.eager_input.tsv; do
     ## Check if batch has barcodes and their lengths.
     ##    barcode_rem will be the trim parameter calls for eager if needed, else ''.
     barcode_rem=$( (grep ${batch_name} ${barcode_info_fn} | awk '{print "--run_post_ar_trimming --post_ar_trim_front",$2,"--post_ar_trim_tail",$3}') || echo '' )
+
+    ## To make resuming easier and more stable, cd into the output directory to run the command, then back out.
+    cd ${eager_output_dir}
 
     ## If the eager input is newer than the output directory or the output directory doesnt exist, then eager is run on the input
     if [[ ${eager_input} -nt ${eager_output_dir} ]]; then
@@ -83,37 +90,38 @@ for eager_input in /mnt/archgen/MICROSCOPE/eager_inputs/*.eager_input.tsv; do
             ${barcode_rem} -with-tower -ansi-log false"
 
         touch -c ${eager_output_dir} ## Refresh the creation date of the output directory to reflect the start of the new run, but do not create a file if it doesnt exist.
-            
-            nextflow run nf-core/eager \
-                -r ${eager_version} \
-                -profile ${nextflow_profiles} \
-                -c ${microscope_config} \
-                --input ${eager_input} \
-                --email ${USER}@eva.mpg.de \
-                --outdir ${eager_output_dir} \
-                -w ${eager_output_dir}/work \
-                -dsl1 \
-                ${barcode_rem} -with-tower -ansi-log false
-            
+        
+        nextflow run nf-core/eager \
+            -r ${eager_version} \
+            -profile ${nextflow_profiles} \
+            -c ${microscope_config} \
+            --input ${eager_input} \
+            --email ${USER}@eva.mpg.de \
+            --outdir ${eager_output_dir} \
+            -w ${eager_output_dir}/work \
+            -dsl1 \
+            ${barcode_rem} -with-tower -ansi-log false
+        
     ## If the MultiQC report is older than the directory, or doesnt exist yet, try to resume execution. Helpful for runs that failed.
     elif [[ ${eager_output_dir} -nt ${eager_output_dir}/multiqc/multiqc_report.html ]]; then
         if [[ ${dry_run} == "TRUE" ]]; then
             echo "${batch_name} needs reprocessing."
             continue
         fi
-        if [[ ${user_reply} != "Y" ]]; then 
+        if [[ ${user_reply} =~ ^(Y|N)$ ]]; then 
             unset user_reply
             echo -e "${Yellow}Output directory for batch ${Red}$(basename ${eager_output_dir})${Yellow} already exists, but lacks 'multiqc/multiqc_report.html', or that report is outdated.$(tput sgr0)" ## '$(tput sgr0) returns to normal printing after the line is done
             echo "If a nextflow run for that batch did not complete successfully and was killed, I can try to resume that run from where it failed."
             echo """Would you like me to try?
             [y]es
             [n]o
-            [Y]es to all"""
+            [Y]es to all
+            [N]o to all"""
             read user_reply
         fi
         ## Ensure user reply is in expected format. Only "y" or "n" allowed.
-        while ! [[ "${user_reply}" =~ ^(y|n|Y)$ ]]; do
-            echo "Unrecognised input. [y/n/Y]"
+        while ! [[ "${user_reply}" =~ ^(y|n|Y|N)$ ]]; do
+            echo "Unrecognised input. [y/n/Y/N]"
             read user_reply
         done
         if [[ ${user_reply} =~ ^(y|Y)$ ]]; then
@@ -143,6 +151,7 @@ for eager_input in /mnt/archgen/MICROSCOPE/eager_inputs/*.eager_input.tsv; do
         else
             echo "OK! ${eager_input} was skipped"
         fi
+
     fi
 done
 
