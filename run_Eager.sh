@@ -78,7 +78,7 @@ for eager_input in /mnt/archgen/MICROSCOPE/eager_inputs/*.eager_input.tsv; do
         fi
         # echo "${eager_input}:    Input is newer"
         echo "Running eager on ${eager_input}:"
-        echo "nextflow run nf-core/eager \
+        echo "cd ${eager_output_dir}; nextflow run nf-core/eager \
             -r ${eager_version} \
             -profile ${nextflow_profiles} \
             -c ${microscope_config} \
@@ -125,7 +125,7 @@ for eager_input in /mnt/archgen/MICROSCOPE/eager_inputs/*.eager_input.tsv; do
             read user_reply
         done
         if [[ ${user_reply} =~ ^(y|Y)$ ]]; then
-            echo "nextflow run nf-core/eager \
+            echo "cd ${eager_output_dir}; nextflow run nf-core/eager \
                 -r ${eager_version} \
                 -profile ${nextflow_profiles} \
                 -c ${microscope_config} \
