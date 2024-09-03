@@ -1,4 +1,7 @@
 #!/usr/bin/env Rscript
+
+#### THIS SCRIPT IS DEPRECATED SINCE 03-09-2024, IN FAVOUR OF pandora2eager. IT IS LEFT HERE FOR REFERENCE ONLY, AND WILL BE REMOVED IN THE FUTURE ####
+
 if (!require('sidora.core')) {
   if(!require('remotes')) install.packages('remotes')
 remotes::install_github('sidora-tools/sidora.core', quiet=T)

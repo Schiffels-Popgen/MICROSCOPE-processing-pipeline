@@ -8,7 +8,7 @@ for seq_batch in ${DIR}/sequencing_batches/*; do
     fn_identical_twins="${DIR}/identical_twins_per_batch/$(basename ${seq_batch} .txt).identical_twins.tsv"
     if [[ ${seq_batch} -nt ${fn_eager_input} ]]; then
         echo "Now processing ${seq_batch}"
-        ~thiseas_christos_lamnidis/Software/github/Schiffels-Popgen/MICROSCOPE-processing-pipeline/query_pandora_for_data.R ${seq_batch} ${cred_file} \
+        /mnt/archgen/tools/pandora2eager/0.6.0/pandora2eager.sh --add_ss_suffix ${seq_batch} ${cred_file} \
             >${DIR}/eager_inputs/$(basename ${seq_batch} .txt).eager_input.tsv
         
         ## If an identical twins annotation file exists for the batch, then mark identical individuals in the eager input file
