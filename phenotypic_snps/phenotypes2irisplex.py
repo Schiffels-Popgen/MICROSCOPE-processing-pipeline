@@ -1,6 +1,7 @@
 #!/usr/bin/env python
 
-import sys, argparse
+import sys
+import argparse
 
 def complement_of(x):
   complementary_bases ={
