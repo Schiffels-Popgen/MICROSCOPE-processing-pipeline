@@ -7,7 +7,7 @@ checkFail() { local message; message=${2}; if [[ ${1} != 0 ]]; then echo -e "${R
 
 ## Defaults/Hard-codes
 ##   The destination directory for the poseidon packages is the same as the live directory. They are separated to aid in testing.
-destination_package_dir="/mnt/archgen/MICROSCOPE/tmp/poseidon_packages"
+destination_package_dir="/mnt/archgen/MICROSCOPE/poseidon_packages_new"
 live_package_dir="/mnt/archgen/MICROSCOPE/poseidon_packages"
 date_str=$(date +'%Y-%m-%d')
 
@@ -32,7 +32,7 @@ Green=$(tput sgr0)'\033[1;32m' ## Green normal face
 Normal=$(tput sgr0)
 processed_batches=''
 
-for seq_batch in 2021-01-04-austria; do #$(find /mnt/archgen/MICROSCOPE/eager_outputs/* -maxdepth 0 ! -path "*2021-01-27-Prague_bams"); do
+for seq_batch in $(find /mnt/archgen/MICROSCOPE/eager_outputs/* -maxdepth 0 ! -path "*2021-01-27-Prague_bams"); do
     batch_name=$(basename ${seq_batch})
     ## Find the newest genotype file in the genotyping directory.
     newest_genotype_fn=$(ls -Art -1 /mnt/archgen/MICROSCOPE/eager_outputs/${batch_name}/genotyping/*geno | tail -n 1) ## Reverse order and tail to avoid broken pipe errors
@@ -233,4 +233,3 @@ if [[ ${processed_batches} != '' ]]; then
         echo " - \`${processed_batch/@/\`: }"
     done
 fi
-
