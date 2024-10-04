@@ -6,12 +6,15 @@ Code for the standard data processing pipeline for the ERC project MICROSCOPE
 .
 ├── seqIds2Eager2.sh                   ## Wrapper that applies query_pandora_for_data.R to each unprocessed sequencing batch
 ├── merge_data_from_identical_twins.sh ## If identical individuals are flagged for a batch, creates the required symlinks and updates the TSV to duplicate and merge individual data.
-├── query_pandora_for_data.R           ## Queries PANDORA to collect sample, library and sequencing information in an TSV
+├── query_pandora_for_data.R           ## DEPRECATED! Queries PANDORA to collect sample, library and sequencing information in an TSV
 ├── run_Eager.sh                       ## Wrapper that runs/resumes eager for each unprocessed sequencing run
 ├── MICROSCOPE.config                  ## Configuration file for eager runs. contains all parameters for the eager runs
-├── create_preliminary_reports.sh      ## Wrapper that knits the preliminary report for each newly processed eager run
+├── assets
+│   └── adapter_list.txt               ## List of adapters used for the adapter-trimming step in eager
+├── create_preliminary_reports.sh      ## DEPRECATED! Wrapper that knits the preliminary report for each newly processed eager run
 ├── make_poseidon_packages.sh          ## Makes a poseidon package per batch using info form PANDORA and the batch genotypes
-├── site_ids_to_names.R                ## Queries PANDORA for site Ids and names and creates an auxillary file
+├── bin
+│   └── collect_genotypes.py           ## Collects all genotypes from the eager output to a single file. Used by make_poseidon_packages.sh
 ├── plink_mds
 │   ├── west_eurasian_poplist.txt      ## List of West Eurasian populations for forging the pca package.
 │   ├── forge_pca_package.sh           ## Create forge list and forge PCA poseidon package.
@@ -21,8 +24,8 @@ Code for the standard data processing pipeline for the ERC project MICROSCOPE
 └── project_reports
     ├── assets
     │   └── bg_annotation.txt          ## Annotation info for west Eurasian bg PCA pops.
-    ├── knit_preliminary_report.R      ## Finds the correct input files to knit the preliminary report for a batch
-    ├── preliminary_report.Rmd         ## The preliminary report template file
+    ├── knit_preliminary_report.R      ## DEPRECATED! Finds the correct input files to knit the preliminary report for a batch
+    ├── preliminary_report.Rmd         ## DEPRECATED! The preliminary report template file
     ├── knit_long_report.R             ## Finds the correct input files to knit the extended preliminary report for a batch
     └── long_report.Rmd                ## The extended preliminary report template file
 
