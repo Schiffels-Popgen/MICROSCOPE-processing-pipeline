@@ -83,6 +83,9 @@ for name in sample_names:
 for line in In:
   allele_bases=[]
   fields = line.strip().split("\t")
+  ## Skip the secondary header line
+  if fields[0] == "Non-effect":
+    continue
   rsTag = fields[3]
   ## If the SNP is not one we are interested in, skip it
   if rsTag not in snp_alleles:
