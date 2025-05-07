@@ -20,7 +20,6 @@ Maltese
 Mordovian
 Norwegian
 Orcadian
-Polish
 Romanian
 Russian
 Sardinian

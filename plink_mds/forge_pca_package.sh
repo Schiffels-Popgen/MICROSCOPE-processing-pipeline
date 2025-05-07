@@ -56,7 +56,7 @@ if [[ ${force_remake} == "TRUE" || ${newest_janno} -nt /mnt/archgen/MICROSCOPE/f
         tail -n +2 ${janno} | awk -F "\t" -v OFS='\t' '{print $3}' | sort -u >> ${forge_dir}/forgelist.txt
     done
 
-    ${trident_path} forge --forgeFile ${forge_dir}/forgelist.txt -d ${poseidon_dir} -o ${package_dir} -n microscope_pca --intersect --eigenstrat
+    ${trident_path} forge --forgeFile ${forge_dir}/forgelist.txt -d ${poseidon_dir} -o ${package_dir} -n microscope_pca --intersect --outFormat EIGENSTRAT
     ${trident_path} genoconvert -d ${package_dir} --outFormat PLINK
 else
     echo "No changes in any janno files since the 'microscope_pca' package was created."
