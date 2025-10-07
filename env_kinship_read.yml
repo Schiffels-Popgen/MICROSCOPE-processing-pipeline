@@ -1,0 +1,8 @@
+name: MIC_kinship_read
+channels:
+  - bioconda
+  - conda-forge
+dependencies:
+  - conda-forge::python=2.7.15
+  - conda-forge::r-base=4.0.3
+  - bioconda::plink=1.90b6.21

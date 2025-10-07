@@ -1,0 +1,11 @@
+name: MIC_automated_analysis
+channels:
+  - bioconda
+  - conda-forge
+dependencies:
+  - conda-forge::pip=25.2
+  - conda-forge::python=3.10
+  - bioconda::samtools=1.14
+  # - bioconda::pmmrcalculator=1.1.0 ## Recipe needs updating
+  - bioconda::poseidon-trident=0.26.1
+  - bioconda::eigensoft=7.2.1
