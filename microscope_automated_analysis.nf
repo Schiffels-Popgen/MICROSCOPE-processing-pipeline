@@ -48,7 +48,9 @@ Channel.fromPath("/mnt/archgen/MICROSCOPE/poseidon_packages/${params.batch}/*.{g
     .into { ch_input_for_pmmr; ch_input_dummy }
 
 process pmmrCalculator {
-    conda 'bioconda::pmmrcalculator=1.1.0'
+    // An environment containing only "conda env create -n pmmrcalculator bioconda::pmmrcalculator=1.1.0". Until the recipe is updated, it cannot be included in env_automated_analysis.yml.
+    conda "/home/thiseas_christos_lamnidis/anaconda3/envs/MIC_pmmrcalculator" 
+    // conda 'bioconda::pmmrcalculator=1.1.0'
     tag "${params.batch}"
     publishDir "${params.outdir}/${params.batch}/pmmr", mode: 'copy'
     memory '1GB'
@@ -69,7 +71,9 @@ process pmmrCalculator {
 }
 
 process forge_package {
-    conda 'bioconda::poseidon-trident=0.26.1'
+    // The `automated_analysis` profile was created using env_automated_analysis.yml. It is provided here so nextflow does not create the environment anew for each run.
+    conda "/home/thiseas_christos_lamnidis/anaconda3/envs/MIC_automated_analysis"
+    // conda 'bioconda::poseidon-trident=0.26.1'
     memory '1GB'
     cpus 1
     
@@ -99,7 +103,9 @@ Channel.fromPath("/mnt/archgen/MICROSCOPE/forged_packages/microscope_pca/*.{geno
     .into{ ch_for_smartpca_europe; ch_for_smartpca_eurasia }
 
 process microscope_pca_eurasia {
-    conda 'bioconda::eigensoft=7.2.1'
+    // The `automated_analysis` profile was created using env_automated_analysis.yml. It is provided here so nextflow does not create the environment anew for each run.
+    conda "/home/thiseas_christos_lamnidis/anaconda3/envs/MIC_automated_analysis"
+    // conda 'bioconda::eigensoft=7.2.1'
     publishDir "/mnt/archgen/MICROSCOPE/automated_analysis/microscope_pca/", mode: 'copy'
     memory '20GB'
     cpus 4
@@ -120,7 +126,9 @@ process microscope_pca_eurasia {
 }
 
 process microscope_pca_europe {
-    conda 'bioconda::eigensoft=7.2.1'
+    // The `automated_analysis` profile was created using env_automated_analysis.yml. It is provided here so nextflow does not create the environment anew for each run.
+    conda "/home/thiseas_christos_lamnidis/anaconda3/envs/MIC_automated_analysis"
+    // conda 'bioconda::eigensoft=7.2.1'
     publishDir "/mnt/archgen/MICROSCOPE/automated_analysis/microscope_pca/", mode: 'copy'
     memory '20GB'
     cpus 4
@@ -153,7 +161,9 @@ Channel.fromPath("/mnt/archgen/MICROSCOPE/poseidon_packages/${params.batch}/*.{b
     .into { ch_input_for_read; ch_input_dummy }
 
 process kinship_read {
-    conda 'conda-forge::python=2.7.15 conda-forge::r-base=4.0.3 bioconda::plink=1.90b6.21'
+    // Because kinship-read relies on python2, it needs its own environment. That is created using env_kinship_read.yml.  It is provided here so nextflow does not create the environment anew for each run.
+    conda "/home/thiseas_christos_lamnidis/anaconda3/envs/MIC_kinship_read"
+    // conda 'conda-forge::python=2.7.15 conda-forge::r-base=4.0.3 bioconda::plink=1.90b6.21'
     tag "${params.batch}"
     publishDir "${params.outdir}/${params.batch}/read", mode: 'copy'
     memory '1GB'
@@ -219,7 +229,9 @@ ch_bams_for_phenotypes = Channel
 
 process phenotypic_analysis {
     tag "${params.batch}"
-    conda "bioconda::samtools=1.14 conda-forge::python=3.10.2"
+    // The `automated_analysis` profile was created using env_automated_analysis.yml. It is provided here so nextflow does not create the environment anew for each run.
+    conda "/home/thiseas_christos_lamnidis/anaconda3/envs/MIC_automated_analysis"
+    // conda "bioconda::samtools=1.14 conda-forge::python=3.10.2"
     publishDir "${params.outdir}/${params.batch}/phenotypes", mode: 'copy'
     memory '1GB'
     cpus 1
