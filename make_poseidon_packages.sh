@@ -21,6 +21,8 @@ update_switch="off" ## Do any packages need updating? Then update al janno files
 Yellow=$(tput sgr0)'\033[1;33m' ## Yellow normal face
 Normal=$(tput sgr0)
 processed_batches=''
+## Hardcode path to trident binary for v0.26.1
+trident_path="/home/thiseas_christos_lamnidis/anaconda3/envs/MICtrident/bin/trident"
 
 for seq_batch in $(find /mnt/archgen/MICROSCOPE/eager_outputs/* -maxdepth 0 ! -path "*2021-01-27-Prague_bams"); do
     batch_name=$(basename ${seq_batch})
@@ -36,7 +38,7 @@ for seq_batch in $(find /mnt/archgen/MICROSCOPE/eager_outputs/* -maxdepth 0 ! -p
         fi
         regex="s/pileupcaller.single/${batch_name}/"
         # echo $(basename $seq_batch)
-        trident init \
+        ${trident_path} init \
             --inFormat EIGENSTRAT \
             --snpSet 1240K \
             --genoFile /mnt/archgen/MICROSCOPE/eager_outputs/${batch_name}/genotyping/pileupcaller.single.geno \
@@ -52,7 +54,7 @@ for seq_batch in $(find /mnt/archgen/MICROSCOPE/eager_outputs/* -maxdepth 0 ! -p
         rename -f -e 's/.txt$//' /mnt/archgen/MICROSCOPE/poseidon_packages/${batch_name}/${batch_name}*txt
 
         ## Also make plink format dataset (needed for READ)
-        trident genoconvert -d /mnt/archgen/MICROSCOPE/poseidon_packages/${batch_name} --outFormat PLINK
+        ${trident_path} genoconvert -d /mnt/archgen/MICROSCOPE/poseidon_packages/${batch_name} --outFormat PLINK
         processed_batches+="${batch_name} "
 
 
@@ -68,7 +70,7 @@ for seq_batch in $(find /mnt/archgen/MICROSCOPE/eager_outputs/* -maxdepth 0 ! -p
         fi
         regex="s/pileupcaller.double/${batch_name}/"
         # echo $(basename $seq_batch)
-        trident init \
+        ${trident_path} init \
             --inFormat EIGENSTRAT \
             --snpSet 1240K \
             --genoFile /mnt/archgen/MICROSCOPE/eager_outputs/${batch_name}/genotyping/pileupcaller.double.geno \
@@ -85,7 +87,7 @@ for seq_batch in $(find /mnt/archgen/MICROSCOPE/eager_outputs/* -maxdepth 0 ! -p
         # rename -f -e 's/.txt$//' /mnt/archgen/MICROSCOPE/poseidon_packages/${batch_name}/${batch_name}*txt
 
         ## Also make plink format dataset (needed for READ)
-        trident genoconvert -d /mnt/archgen/MICROSCOPE/poseidon_packages/${batch_name} --outFormat PLINK
+        ${trident_path} genoconvert -d /mnt/archgen/MICROSCOPE/poseidon_packages/${batch_name} --outFormat PLINK
 
     fi
 done
@@ -259,10 +261,10 @@ if [[ ${force_update_switch} == "TRUE" || ${update_switch} == "on" ]]; then
 
         echo -e "${Yellow}${batch}:  Updating POSEIDON.yml hashes ${Normal}"
         ## Then update the hashes in POSEIDON.yml
-        trident update -d $(dirname ${ind_f})
+        ${trident_path} update -d $(dirname ${ind_f})
 
         ## Finally, validate the produced package
-        trident validate -d /mnt/archgen/MICROSCOPE/poseidon_packages/${batch_name}
+        ${trident_path} validate -d /mnt/archgen/MICROSCOPE/poseidon_packages/${batch_name}
         if [[ $? != 0 ]]; then
             echo -e "${Red}${batch}:  Package '${batch}' failed validation. Halting execution.${Normal}"
         else
