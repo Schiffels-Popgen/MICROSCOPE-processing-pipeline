@@ -23,5 +23,5 @@ for seq_batch in ${DIR}/sequencing_batches/*; do
     else
         echo "${seq_batch} has already been processed"
     fi
-    echo ""
+    ## echo ""
 done

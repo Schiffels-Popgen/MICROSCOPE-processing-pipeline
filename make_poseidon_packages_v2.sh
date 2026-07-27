@@ -83,7 +83,7 @@ for seq_batch in $(find /mnt/archgen/MICROSCOPE/eager_outputs/* -maxdepth 0 ! -p
         ## Now without a library preference (--keep_only) since the output contains both types.
         echo -e "${Yellow}[${batch_name}] Filling-in information from nf-core/eager results ${Normal}"
         eager_result_dir="/mnt/archgen/MICROSCOPE/eager_outputs/${batch_name}"
-        ~/anaconda3/envs/MICROSCOPE/lib/R/library/eager2poseidon/exec/eager2poseidon.R \
+        ~/Software/github/Schiffels-Popgen/MICROSCOPE-processing-pipeline/run_Rscript_containerised.sh ~/anaconda3/envs/MICROSCOPE/lib/R/library/eager2poseidon/exec/eager2poseidon.R \
             --input_janno ${janno_f} \
             --eager_tsv /mnt/archgen/MICROSCOPE/eager_inputs/${batch_name}.eager_input.tsv \
             --general_stats_table ${eager_result_dir}/multiqc/multiqc_data/multiqc_general_stats.txt \

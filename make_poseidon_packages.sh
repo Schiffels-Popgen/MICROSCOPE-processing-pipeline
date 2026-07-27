@@ -132,7 +132,7 @@ if [[ ${force_update_switch} == "TRUE" || ${update_switch} == "on" ]]; then
         ## Run eager2poseidon
         ##  Requires poseidonR from this version. Newer version clashes with something ##  remotes::install_github('poseidon-framework/poseidonR', ref='99f1e9c9954d9b7e79e796c24e90036f2576a112')
 
-        echo "~/Software/github/sidora-tools/eager2poseidon/exec/eager2poseidon.R \
+        echo "~/Software/github/Schiffels-Popgen/MICROSCOPE-processing-pipeline/run_Rscript_containerised.sh ~/Software/github/sidora-tools/eager2poseidon/exec/eager2poseidon.R \
             --input_janno ${temp_janno} \
             --eager_tsv /mnt/archgen/MICROSCOPE/eager_inputs/${batch}.eager_input.tsv \
             --general_stats_table ${eager_result_dir}/multiqc/multiqc_data/multiqc_general_stats.txt \
@@ -142,7 +142,7 @@ if [[ ${force_update_switch} == "TRUE" || ${update_switch} == "on" ]]; then
             --keep_only ${library_preference}" \
             ${ss_suffix} | tr -s " "
         
-        ~/Software/github/sidora-tools/eager2poseidon/exec/eager2poseidon.R \
+        ~/Software/github/Schiffels-Popgen/MICROSCOPE-processing-pipeline/run_Rscript_containerised.sh ~/Software/github/sidora-tools/eager2poseidon/exec/eager2poseidon.R \
             --input_janno ${temp_janno} \
             --eager_tsv /mnt/archgen/MICROSCOPE/eager_inputs/${batch}.eager_input.tsv \
             --general_stats_table ${eager_result_dir}/multiqc/multiqc_data/multiqc_general_stats.txt \
@@ -264,7 +264,7 @@ if [[ ${force_update_switch} == "TRUE" || ${update_switch} == "on" ]]; then
         ${trident_path} update -d $(dirname ${ind_f})
 
         ## Finally, validate the produced package
-        ${trident_path} validate -d /mnt/archgen/MICROSCOPE/poseidon_packages/${batch_name}
+        ${trident_path} validate -d /mnt/archgen/MICROSCOPE/poseidon_packages/${batch}
         if [[ $? != 0 ]]; then
             echo -e "${Red}${batch}:  Package '${batch}' failed validation. Halting execution.${Normal}"
         else

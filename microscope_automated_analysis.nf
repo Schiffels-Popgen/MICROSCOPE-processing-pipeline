@@ -253,7 +253,8 @@ process phenotypic_analysis {
     done
 
     ## get mpileup results (set max depth to 100 to limit memory footprint.)
-    samtools mpileup -d 100 -a -Q 30 -B -q30 -l <(awk -v OFS="\t" -F "\t" '{print \$3,\$4}' ${params.phenotype_annotation} | tail -n +2) ${bams} >${params.batch}.mpileup.q30.Q30.B.txt
+    ## For some reason, the process seems to use an older centrally installed samtools which lacks the `-a` option. Use \$CONDA_PREFIX to force the conda-installed samtools.
+    \$CONDA_PREFIX/bin/samtools mpileup -d 100 -a -Q 30 -B -q30 -l <(awk -v OFS="\t" -F "\t" '{print \$3,\$4}' ${params.phenotype_annotation} | tail -n +2) ${bams} >${params.batch}.mpileup.q30.Q30.B.txt
 
     ## Check phenotypes
     ${baseDir}/phenotypic_snps/infer_phenotypes.py -a${params.phenotype_annotation} -f samplelist.txt ${params.batch}.mpileup.q30.Q30.B.txt >${params.batch}.phenotypes.txt
