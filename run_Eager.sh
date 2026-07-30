@@ -45,7 +45,9 @@ if [[ $(hostname) =~ ^mpi- ]]; then
 elif [[ $(hostname) =~ ^cdag ]]; then
     nextflow_profiles="cdag,shh,microscope"
 elif [[ $(hostname) =~ ^bio ]]; then
-    nextflow_profiles="eva,archgen,medium_data,microscope"
+    nextflow_profiles="eva,archgen,medium_data,sge,microscope"
+elif hostname | grep -q -e login -e hpc -e dlcenode ; then
+    nextflow_profiles="eva_grace,microscope"
 fi
 
 ## Set colour and face for colour printing

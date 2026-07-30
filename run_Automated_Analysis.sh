@@ -38,11 +38,13 @@ fi
 
 ## Set profiles based on cluster.
 if [[ $(hostname) =~ ^mpi- ]]; then
-  nextflow_profiles="shh,singularity,automated_analysis"
+    nextflow_profiles="shh,singularity,automated_analysis"
 elif [[ $(hostname) =~ ^cdag ]]; then
-  nextflow_profiles="cdag,shh,automated_analysis"
+    nextflow_profiles="cdag,shh,automated_analysis"
 elif [[ $(hostname) =~ ^bio ]]; then
-  nextflow_profiles="eva,archgen,automated_analysis"
+    nextflow_profiles="eva,archgen,sge,automated_analysis"
+elif hostname | grep -q -e login -e hpc -e dlcenode ; then
+    nextflow_profiles="eva_grace,automated_analysis"
 fi
 
 ## Set colour and face for colour printing
